@@ -4,5 +4,7 @@ description: Wang Yuhao
 baseurl:
 url: yohirow.github.io
 
-theme: jekyll-theme-minimal
+plugins:
+  - jekyll-remote-theme
 
+remote_theme: ngzhio/jekyll-theme-hamilton
