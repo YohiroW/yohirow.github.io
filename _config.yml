@@ -29,7 +29,7 @@ url: "http://yohirow.github.io" # the base hostname & protocol for your site, e.
 github_username: YohiroW
 default: 
   scope:
-    path: "public/images"
+    path: "public/image"
   values:
     image: true
 github_username: YohiroW
