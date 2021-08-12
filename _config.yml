@@ -24,9 +24,9 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: Your awesome title
-email: your-email@domain.com
-author: GitHub User
+title: Moth & Fire
+email: yohiro36@foxmail.com
+author: Yohiro Wang
 
 # Copyright setting
 # You can use any html code, currently below placeholders are available:
@@ -151,11 +151,11 @@ yat:
 #   - about.md
 
 # Page default value
-# defaults:
-#   home:
-#     heading: "Your awesome heading"
-#     subheading: "Your awesome subheading"
-#     banner: "Your image url"
+defaults:
+  home:
+    heading: "Yohiro Wang"
+    subheading: "你知道爆米花的花语是什么吗？"
+#    banner: "Your image url"
 
 # Banner default settings
 # These banner settings are for global banner default, but you can also
