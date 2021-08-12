@@ -1,5 +1,10 @@
+---
+layout: post
+title: Rendering Pipeline in UE4
+date: 2021-08-12 08:37:52
+category: UnrealEngine
+---
 # Rendering Pipeline in UE4
-
 这篇文章会把UE4中的渲染流程捋一遍，结合之前的项目经验，谈一谈每个pass可能产生的问题以及相关的优化方法。
 也是为了学习设计管线和方便后续的工作。因为不在公司，抓帧没办法抓改过管线的版本，所以就自己搭了一个场景。
 好吧，我们开始。
