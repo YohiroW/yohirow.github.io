@@ -5,10 +5,6 @@ subheading: Go through UE4 rendering pipeline
 author: Yohiro
 categories: UnrealEngine
 banner:
-  video: https://vjs.zencdn.net/v/oceans.mp4
-  loop: true
-  volume: 0.8
-  start_at: 8.5
   image: https://bit.ly/3xTmdUP
   opacity: 0.618
   background: "#000"
