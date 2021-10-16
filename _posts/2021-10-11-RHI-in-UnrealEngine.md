@@ -20,7 +20,7 @@ sidebar: []
 
 一直以来，总觉得自己对于结构这种东西有种奇妙的纠结，每每想实现一个功能点，总是要纠结很久。所以最近想把UE4里一些感兴趣的结构捋一捋。之所以从RHI开始，是因为最近在学Vulkan，想看看一些开源的实现。虽然大学的时候有写过OpenGL的渲染器，但是那东西在现在的我看来，毫无结构可言，更何况NextGenAPI确实和上一代有着巨大的区别。
 
-**RHI**，即**Rendering Hardware Interface**。实际上是为了在不用平台上运行时提供统一的上层图形接口。RHI的职责是根据Scene传来的数据组装成为抽象的命令，即**FRHICommand**，然后将其下发至当前绑定的FDynamicRHI，这里就成为了我们熟悉的DX12,OpenGL或者Vulkan这类图形接口了。官方文档中说RHI就像是图形渲染的前端,除了组装命令外，资源管理以及多线程渲染的同步都是它的分内之事。
+**RHI**，即**Rendering Hardware Interface**。是为了跨平台而提供的图形接口的抽象层。RHI的职责是根据Scene传来的数据组装成为抽象的命令，即**FRHICommand**，然后将其下发至当前绑定的FDynamicRHI，这里就成为了我们熟悉的DX12,OpenGL或者Vulkan这类图形接口了。按照官方文档中的说法，RHI就像是图形渲染的前端。除了组装命令外，资源管理以及多线程渲染的同步都是它的分内之事。
 
 ![](https://docs.unrealengine.com/4.27/Images/ProgrammingAndScripting/Rendering/ParallelRendering/Parallel_Rendering_00.webp)
 
@@ -35,6 +35,7 @@ static FAutoConsoleCommand CVarRHIThreadEnable(
   Usage: r.RHIThread.Enable 0=off,  1=dedicated thread,  2=task threads;
 ```
 开启后，FRHIThread像UE里每一个线程一样也会指定线程亲和性(Affinity)，直白点说就是我们可以指定我们更倾向于让这个线程运行在哪个核心上，RHI线程和游戏的逻辑线程、渲染线程、loading线程一起可以在对应的PlatformAffinity.h中查看，更具体地设置需要查看Setup函数。
+
 
 
 
