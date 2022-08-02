@@ -13,27 +13,46 @@ PGO(Profile Guided Optimization)是一种基于LLVM的编译时优化，使用�
 按照Epic的流程，PGO应搭配Gauntlet测试框架食用，关于Gauntlet框架的可参考官方文档[**Gauntlet自动化框架**](https://docs.unrealengine.com/4.27/zh-CN/TestingAndOptimization/Automation/Gauntlet/)，这里不做赘述。
 
 - 创建Gauntlet的测试用例并添加该测试至Gauntletd的项目中。这个过程可以参考`Engine\Source\Programs\AutomationTool\Gauntlet\Unreal\Game`下的Samples。
-  Gauntlet中已经有一个PGO的测试节点`Gauntlet.UnrealPGONode.cs`。
+  Gauntlet中已经有一个PGO的测试节点`Gauntlet.UnrealPGONode.cs`，其中PGOConfig有下面几个参数，可通过命令行传入，其中`ProfileOutputDirectory`是必需的。
+  ```csharp
+    /// <summary>
+		/// Output directory to write the resulting profile data to.
+		/// </summary>
+		[AutoParam("")]
+		public string ProfileOutputDirectory;
+
+		/// <summary>
+		/// Directory to save periodic screenshots to whilst the PGO run is in progress.
+		/// </summary>
+		[AutoParam("")]
+		public string ScreenshotDirectory;
+
+		[AutoParam("")]
+		public string PGOAccountSandbox;
+
+		[AutoParam("")]
+		public string PgcFilenamePrefix;
+  ```
 - 构建用于PGO的版本
 - 使用UAT运行指定的测试用例。也可以加入到bat文件里：
 ```bat
-rem Path for RunUAT.bat
+rem path for RunUAT.bat
 set UAT_PATH=RunUAT.bat
-rem ProjectName
+rem project name
 set PRJ_NAME=Afterimage
-rem Staging Path
+rem staging path
 set STAGING_DIR=E:\Ref\Aurogon\Sunlight\Afterimage\Saved\TempStagedBuilds
-rem Test command
+rem test command
 set TEST_CMD=RunUnreal
-rem Test Name
+rem test name
 set TEST_NAME=PGOTest
-rem Profdata output path
+rem profdata output path
 set PROFILE_OUTPUT_PATH=Afterimage\Saved\Automation\PGO\
-rem Screenshot path
+rem screenshot path
 set SCREENSHOT_DIRECTORY=Afterimage\Saved\Automation\PGO\Screenshot\
-rem Platform Name
+rem platform Name
 set PLATFORM=PS5
-rem Config
+rem build configuration
 set CONFIG=Test
 
 rem ********************* Start Gauntlet Test *********************
