@@ -39,7 +39,7 @@ PGO(Profile Guided Optimization)是一种基于LLVM的编译时优化，使用�
   rem path for RunUAT.bat
   set UAT_PATH=RunUAT.bat
   rem project name
-  set PRJ_NAME=Afterimage
+  set PRJ_NAME={ProjectName}
   rem staging path
   set STAGING_DIR={EngineRoot}\{ProjectName}\Saved\StagedBuilds
   rem test command
