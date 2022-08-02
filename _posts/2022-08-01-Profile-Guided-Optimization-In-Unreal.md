@@ -35,31 +35,31 @@ PGO(Profile Guided Optimization)是一种基于LLVM的编译时优化，使用�
   ```
 - 构建用于PGO的版本
 - 使用UAT运行指定的测试用例。也可以加入到bat文件里：
-```bat
-rem path for RunUAT.bat
-set UAT_PATH=RunUAT.bat
-rem project name
-set PRJ_NAME=Afterimage
-rem staging path
-set STAGING_DIR=E:\Ref\Aurogon\Sunlight\Afterimage\Saved\TempStagedBuilds
-rem test command
-set TEST_CMD=RunUnreal
-rem test name
-set TEST_NAME=PGOTest
-rem profdata output path
-set PROFILE_OUTPUT_PATH=Afterimage\Saved\Automation\PGO\
-rem screenshot path
-set SCREENSHOT_DIRECTORY=Afterimage\Saved\Automation\PGO\Screenshot\
-rem platform Name
-set PLATFORM=PS5
-rem build configuration
-set CONFIG=Test
+  ```bat
+  rem path for RunUAT.bat
+  set UAT_PATH=RunUAT.bat
+  rem project name
+  set PRJ_NAME=Afterimage
+  rem staging path
+  set STAGING_DIR={EngineRoot}\{ProjectName}\Saved\StagedBuilds
+  rem test command
+  set TEST_CMD=RunUnreal
+  rem test name
+  set TEST_NAME=PGOTest
+  rem profdata output path
+  set PROFILE_OUTPUT_PATH={ProjectName}\Saved\Automation\PGO\
+  rem screenshot path
+  set SCREENSHOT_DIRECTORY={ProjectName}\Saved\Automation\PGO\Screenshot\
+  rem platform Name
+  set PLATFORM=PS5
+  rem build configuration
+  set CONFIG=Test
 
-rem ********************* Start Gauntlet Test *********************
-%UAT_PATH% %TEST_CMD% -project=%PRJ_NAME% -platform=%PLATFORM% -configuration=%CONFIG% -build=%STAGING_DIR%\%PLATFORM%  -test=%TEST_NAME% -ProfileOutputDirectory=%PROFILE_OUTPUT_PATH% -ScreenshotDirectory=%SCREENSHOT_DIRECTORY% 
-rem ********************* End   Gauntlet Test *********************
-pause
-```
+  rem ********************* Start Gauntlet Test *********************
+  %UAT_PATH% %TEST_CMD% -project=%PRJ_NAME% -platform=%PLATFORM% -configuration=%CONFIG% -build=%STAGING_DIR%\%PLATFORM%  -test=%TEST_NAME% -ProfileOutputDirectory=%PROFILE_OUTPUT_PATH% -ScreenshotDirectory=%SCREENSHOT_DIRECTORY% 
+  rem ********************* End   Gauntlet Test *********************
+  pause
+  ```
 - 等待测试完成。如果无误的话，将会在`ProfileOutputDirectory`下面生成扩展名为`*.profraw`的文件，一旦测试流程结束，这些`*.profraw`文件会合并成为一个`profile.profdata`文件，这个文件将在我们使用命令行`-PGOOptimize`启动时
 
 ## Summarize
