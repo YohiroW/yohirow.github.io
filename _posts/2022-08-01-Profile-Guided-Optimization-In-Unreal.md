@@ -10,7 +10,8 @@ sidebar: []
 PGO(Profile Guided Optimization)是一种基于LLVM的编译时优化，使用运行时收集的分析数据来指导编译器进行优化。截至5.0版本，Epic对PC以及各Console平台都进行了配置。PGO在UE中一般会搭配LTO(Link Time Optimization)一起使用以求在静态的编译、链接期达到最好的效果。鉴于网路上现在没有找到PGO相关的文章（反正我没找到），所以这篇文章旨在探明PGO的使用流程以及对PGO结果的评估。
 
 ## 食用方法
-按照Epic的流程，PGO应搭配Gauntlet测试框架食用，关于Gauntlet框架的可参考官方文档[**Gauntlet自动化框架**](https://docs.unrealengine.com/4.27/zh-CN/TestingAndOptimization/Automation/Gauntlet/)，这里不做赘述。
+按照Epic的流程，PGO应搭配Gauntlet测试框架食用，关于Gauntlet框架的可参考官方文档[**Gauntlet自动化框架**](https://docs.unrealengine.com/4.27/zh-CN/TestingAndOptimization/Automation/Gauntlet/)，这里不做赘述。大致流程如图
+![PGO Progress in Unreal](images\PGOInUnreal\Progress.png)
 ### 创建Gauntlet的测试用例
   创建测试用例并添加该测试至Gauntletd的项目中。这个过程可以参考`Engine\Source\Programs\AutomationTool\Gauntlet\Unreal\Game`下的Samples。
   Gauntlet中已经有一个PGO的测试节点`Gauntlet.UnrealPGONode.cs`，其中PGOConfig有下面几个参数，可通过命令行传入，其中`ProfileOutputDirectory`是必需的。
@@ -36,7 +37,7 @@ PGO(Profile Guided Optimization)是一种基于LLVM的编译时优化，使用�
 ### 构建用于PGO的版本
   确保PGO版本中，宏`ENABLE_PGO_PROFILE`被启用，否则不会输出PGO的临时文件。在`TargetRules.cs`中可以看到:
   ```csharp
-    /* --- TargetRules.cs --- */
+    // --- TargetRules.cs ---
   	/// <summary>
 		/// Whether to enable Profile Guided Optimization (PGO) instrumentation in this build.
 		/// </summary>
@@ -44,7 +45,7 @@ PGO(Profile Guided Optimization)是一种基于LLVM的编译时优化，使用�
 		[XmlConfigFile(Category = "BuildConfiguration")]
 		public bool bPGOProfile = true;
 
-    /* --- UEBuildTarget.cs --- */
+    /* --- UEBuildTarget.cs ---
 		if (Rules.bPGOProfile)
 		{
 			GlobalCompileEnvironment.Definitions.Add("ENABLE_PGO_PROFILE=1");
