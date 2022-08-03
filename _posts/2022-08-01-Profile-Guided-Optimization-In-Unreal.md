@@ -13,7 +13,7 @@ PGO(Profile Guided Optimization)是一种基于LLVM的编译时优化，使用�
 按照Epic的流程，PGO应搭配Gauntlet测试框架食用，关于Gauntlet框架的可参考官方文档[**Gauntlet自动化框架**](https://docs.unrealengine.com/4.27/zh-CN/TestingAndOptimization/Automation/Gauntlet/)，这里不做赘述。大致流程如图
 ![PGO Progress in Unreal](images\PGOInUnreal\Progress.png)
 ### 创建Gauntlet的测试用例
-  创建测试用例并添加该测试至Gauntletd的项目中。这个过程可以参考`Engine\Source\Programs\AutomationTool\Gauntlet\Unreal\Game`下的Samples。
+  创建测试用例并添加该测试至Gauntlet的项目中。这个过程可以参考`Engine\Source\Programs\AutomationTool\Gauntlet\Unreal\Game`下的Samples。
   Gauntlet中已经有一个PGO的测试节点`Gauntlet.UnrealPGONode.cs`，其中PGOConfig有下面几个参数，可通过命令行传入，其中`ProfileOutputDirectory`是必需的。
   ```csharp
     /// <summary>
@@ -37,7 +37,7 @@ PGO(Profile Guided Optimization)是一种基于LLVM的编译时优化，使用�
 ### 构建用于PGO的版本
   确保PGO版本中，宏`ENABLE_PGO_PROFILE`被启用，否则不会输出PGO的临时文件。在`TargetRules.cs`中可以看到:
   ```csharp
-    // --- TargetRules.cs ---
+    /* --- TargetRules.cs --- */
   	/// <summary>
 		/// Whether to enable Profile Guided Optimization (PGO) instrumentation in this build.
 		/// </summary>
@@ -45,7 +45,7 @@ PGO(Profile Guided Optimization)是一种基于LLVM的编译时优化，使用�
 		[XmlConfigFile(Category = "BuildConfiguration")]
 		public bool bPGOProfile = true;
 
-    /* --- UEBuildTarget.cs ---
+    /* --- UEBuildTarget.cs --- */
 		if (Rules.bPGOProfile)
 		{
 			GlobalCompileEnvironment.Definitions.Add("ENABLE_PGO_PROFILE=1");
@@ -55,10 +55,10 @@ PGO(Profile Guided Optimization)是一种基于LLVM的编译时优化，使用�
 			GlobalCompileEnvironment.Definitions.Add("ENABLE_PGO_PROFILE=0");
 		}
   ```
-  可以通过在build时传入指定的参数`-PGOProfile`来控制是否开启`ENABLE_PGO_PROFILE`。默认情况下打开PGOProfile后也会打开LTO的选项，因此链接时间会变得非常长长长长。
+  可以通过在build时传入指定的参数`-PGOProfile`来控制是否开启`ENABLE_PGO_PROFILE`。默认情况下打开PGOProfile后也会打开LTO，因此链接时间会变得非常长长长长。
 
 ### 通过UAT启动测试
-  使用UAT运行指定的测试用例。也可以加入到bat文件里：
+  使用UAT运行指定的测试用例。可以加入到bat文件里，方便集成到Jenkins一类的CI里：
   ```bat
   rem path for RunUAT.bat
   set UAT_PATH=RunUAT.bat
@@ -101,3 +101,4 @@ PGO(Profile Guided Optimization)是一种基于LLVM的编译时优化，使用�
 - [GAUNTLET AUTOMATED TESTING AND PERFORMANCE METRICS IN UE4](https://horugame.com/gauntlet-automated-testing-and-performance-metrics-in-ue4/) 古早版本中Gauntlet，可以当作参考
 - [実行速度の最適化のあれこれ](https://www.docswell.com/s/EpicGamesJapan/ZEEL7Z-UE4_LargeScaleDevSQEX_Optimize#p31) 介绍了基于Sample的PGO
 - [Daedalic Test Automation Plugin](https://github.com/DaedalicEntertainment/ue4-test-automation) Github上一款开源的UE的自动测试插件，对Gauntlet也进行了封装
+- [使用配置文件引导的优化 (PGO)](https://source.android.google.cn/devices/tech/perf/pgo) Android项目中使用PGO
