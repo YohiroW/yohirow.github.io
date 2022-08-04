@@ -1,0 +1,58 @@
+<mxfile host="65bd71144e">
+    <diagram id="fT36Q1JD_JJq5hUz48tH" name="Page-1">
+        <mxGraphModel dx="1132" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="5" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="2" target="4">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="2" value="-PGOProfile" style="fontStyle=0;" vertex="1" parent="1">
+                    <mxGeometry x="125" y="30" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="7" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="4" target="6">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="构建PGO版本" style="fontStyle=0;" vertex="1" parent="1">
+                    <mxGeometry x="125" y="90" width="120" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="9" value="" style="edgeStyle=none;html=1;" edge="1" parent="1" source="6" target="8">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="使用UAT执行Gauntlet&#10;从而运行PGOTest" style="fontStyle=0;" vertex="1" parent="1">
+                    <mxGeometry x="100" y="150" width="170" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="11" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="8">
+                    <mxGeometry relative="1" as="geometry">
+                        <mxPoint x="185" y="210" as="targetPoint"/>
+                        <Array as="points">
+                            <mxPoint x="295" y="280"/>
+                            <mxPoint x="295" y="210"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="13" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="8" target="12">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="8" value="Test是否完成" style="rhombus;whiteSpace=wrap;html=1;fontStyle=0;" vertex="1" parent="1">
+                    <mxGeometry x="115" y="240" width="140" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" edge="1" parent="1" source="12" target="14">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="收集*.profraw并合并为profile.profdata" style="whiteSpace=wrap;html=1;fontStyle=0;" vertex="1" parent="1">
+                    <mxGeometry x="110" y="350" width="150" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="使用-PGOOptimize启动" style="whiteSpace=wrap;html=1;fontStyle=0;" vertex="1" parent="1">
+                    <mxGeometry x="110" y="430" width="150" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="16" value="N" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="260" y="260" width="30" height="15" as="geometry"/>
+                </mxCell>
+                <mxCell id="17" value="Y" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+                    <mxGeometry x="160" y="320" width="20" height="15" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
