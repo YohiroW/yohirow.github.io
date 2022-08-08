@@ -6,15 +6,52 @@ tags:  PGO Automation Unreal
 sidebar: []
 ---
 
-## Overview
-PGO(Profile Guided Optimization)是一种基于LLVM的编译时优化，使用运行时收集的分析数据来指导编译器进行优化。截至5.0版本，Epic对PC以及各Console平台都进行了配置。PGO在UE中一般会搭配LTO(Link Time Optimization)一起使用以求在静态的编译、链接期达到最好的效果。鉴于网路上现在没有找到PGO相关的文章（反正我没找到），所以这篇文章旨在探明PGO的使用流程以及对PGO结果的评估。
+## 简介
+`PGO(Profile Guided Optimization)`是一种基于LLVM的编译时优化，通过使用运行时收集的分析数据来指导编译器进行优化。截至UE5.0版本，Epic对PC、Android以及各Console平台都进行了配置。鉴于网路上没有找到PGO相关的文章，所以这篇文章旨在探明PGO的使用流程及其优化效果。
 
-## 食用方法
-按照Epic的流程，PGO应搭配Gauntlet测试框架食用，关于Gauntlet框架的可参考官方文档[**Gauntlet自动化框架**](https://docs.unrealengine.com/4.27/zh-CN/TestingAndOptimization/Automation/Gauntlet/)，这里不做赘述。大致流程如图
-![PGO Progress in Unreal](images\PGOInUnreal\Progress.png)
+## 流程
+按照Epic的流程，PGO可以直接启用，也可以搭配`Gauntlet自动测试框架`集成到自动测试流程中使用。关于Gauntlet框架的可参考官方文档[**Gauntlet自动化框架**](https://docs.unrealengine.com/4.27/zh-CN/TestingAndOptimization/Automation/Gauntlet/)。PGO整体的大致流程如图：
+
+![Progress2](images/PGOInUnreal/Progress2.png)
+
+### 构建用于PGO的版本
+  首先需要构建用于收集分析数据的PGO版本。PGO版本中，宏`ENABLE_PGO_PROFILE`应该被启用，否则不会输出PGO的临时文件:
+  ```csharp
+    /* --- TargetRules.cs --- */
+    /// <summary>
+	/// Whether to enable Profile Guided Optimization (PGO) instrumentation in this build.
+	/// </summary>
+	[CommandLine("-PGOProfile", Value = "true")]
+	[XmlConfigFile(Category = "BuildConfiguration")]
+	public bool bPGOProfile = true;
+
+    /* --- UEBuildTarget.cs --- */
+	if (Rules.bPGOProfile)
+	{
+	    GlobalCompileEnvironment.Definitions.Add("ENABLE_PGO_PROFILE=1");
+	}
+	else
+	{
+	    GlobalCompileEnvironment.Definitions.Add("ENABLE_PGO_PROFILE=0");
+	}
+  ```
+  ```cpp
+        /* --- PlatformMisc.cpp --- */
+        #if ENABLE_PGO_PROFILE
+	    // Write the PGO profiling file on a clean shutdown.
+	    extern void PGO_WriteFile();
+	    PGO_WriteFile();
+        #endif
+  ```
+  可以通过在build时传入指定的参数`-PGOProfile`来控制是否开启`ENABLE_PGO_PROFILE`。默认情况下打开PGOProfile后也会打开LTO，因此链接时间会变得非常长长长长。
+ 
+### 运行时收集数据
+  接下来需要启动游戏正常游玩、正常退出。因为只有在`RequestExit()`时才会在`PGO_WriteFile`中调用`__llvm_profile_write_file`即写入扩展名为`*.profraw`的临时文件。
+  该临时文件的输出目录可由命令行参数指定，但由于实现的问题，在不同的平台中，命令行参数有所不同，在启动时不指定输出目录，便会将该文件写入到默认位置，详情可参照`PGO_GetOutputDirectory`函数。
+
 ### 创建Gauntlet的测试用例
-  创建测试用例并添加该测试至Gauntlet的项目中。这个过程可以参考`Engine\Source\Programs\AutomationTool\Gauntlet\Unreal\Game`下的Samples。
-  Gauntlet中已经有一个PGO的测试节点`Gauntlet.UnrealPGONode.cs`，其中PGOConfig有下面几个参数，可通过命令行传入，其中`ProfileOutputDirectory`是必需的。
+  如果需要集成到自动测试流程中，需要创建测试用例并添加该测试至Gauntlet的项目里。这个过程可以参考`Engine\Source\Programs\AutomationTool\Gauntlet\Unreal\Game`下的Samples。
+  Gauntlet中已经有一个PGO的测试节点`Gauntlet.UnrealPGONode.cs`，其中PGOConfig有下面几个参数，可通过命令行传入给UAT，其中`ProfileOutputDirectory`是必需的。
   ```csharp
     /// <summary>
 		/// Output directory to write the resulting profile data to.
@@ -34,28 +71,6 @@ PGO(Profile Guided Optimization)是一种基于LLVM的编译时优化，使用�
 		[AutoParam("")]
 		public string PgcFilenamePrefix;
   ```
-### 构建用于PGO的版本
-  确保PGO版本中，宏`ENABLE_PGO_PROFILE`被启用，否则不会输出PGO的临时文件。在`TargetRules.cs`中可以看到:
-  ```csharp
-    /* --- TargetRules.cs --- */
-  	/// <summary>
-		/// Whether to enable Profile Guided Optimization (PGO) instrumentation in this build.
-		/// </summary>
-		[CommandLine("-PGOProfile", Value = "true")]
-		[XmlConfigFile(Category = "BuildConfiguration")]
-		public bool bPGOProfile = true;
-
-    /* --- UEBuildTarget.cs --- */
-		if (Rules.bPGOProfile)
-		{
-			GlobalCompileEnvironment.Definitions.Add("ENABLE_PGO_PROFILE=1");
-		}
-		else
-		{
-			GlobalCompileEnvironment.Definitions.Add("ENABLE_PGO_PROFILE=0");
-		}
-  ```
-  可以通过在build时传入指定的参数`-PGOProfile`来控制是否开启`ENABLE_PGO_PROFILE`。默认情况下打开PGOProfile后也会打开LTO，因此链接时间会变得非常长长长长。
 
 ### 通过UAT启动测试
   使用UAT运行指定的测试用例。可以加入到bat文件里，方便集成到Jenkins一类的CI里：
@@ -84,17 +99,16 @@ PGO(Profile Guided Optimization)是一种基于LLVM的编译时优化，使用�
   rem ********************* End   Gauntlet Test *********************
   pause
   ```
-### 生成Profdata
-  等待测试完成。如果无误的话，将会在`ProfileOutputDirectory`下面生成扩展名为`*.profraw`的文件，一旦测试流程结束，这些`*.profraw`文件会合并成为一个`profile.profdata`文件，这个文件将在我们使用命令行`-PGOOptimize`启动时
+### 合并为Profdata
+  等待测试完成。如果无误的话，将会在`ProfileOutputDirectory`下面生成扩展名为`*.profraw`的文件。在Gauntlet的测试流程中，当流程结束，这些`*.profraw`文件会由UAT调用`llvm-profdata`合并成为一个`*.profdata`文件。
 
-## Summarize
-随着代码的不断改动，原本的Profile数据将变得不会再对当前版本起效。如果使用诸如#if、#ifdef等预编译指令或是inline的函数都会使当前PGO失效。
-| Pros | Cons |
-|-|-|
-| | |
+### 使用PGOOptimize
+  当启用`PGOOptimize`时，我们收集到的`*.profdata`应位于目录`\{ProjectName}\Platforms\{PlatformName}\Build\PGO\`下，具体的文件名称要在不同平台的`UEBuild{Platform}.cs`中查询。
 
-  
-
+## 注意事项
+- PGO本质上是编译器优化，因此随着优化等级的提高，有可能会暴露出代码中一些原本不存在的问题。
+- 随着版本的迭代，代码不断更新，原本PGO收集的数据在用于新版本的优化时的效果会大打折扣。
+- Profile数据会有额外的内存占用。
 
 ## 参考资料
 - [Gauntlet Automation Framework](https://qiita.com/donbutsu17/items/cd17d500a9fed143e061) 介绍Gauntlet测试框架，可以搭配官方文档一起看
