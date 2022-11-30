@@ -24,6 +24,7 @@ sidebar: uecheetsheet
     * https://blog.csdn.net/sh15285118586/article/details/116723277
     * https://forums.unrealengine.com/t/how-to-reduce-the-fixed-overhead-of-a-scenecapture/283896
     * http://www.cemyuksel.com/research/hairmodels/
+	* https://github.com/google/filament
   - Blog
     * http://karim.naaji.fr/posts.html
 
@@ -34,6 +35,7 @@ sidebar: uecheetsheet
     * https://jashking.github.io/2017/04/26/ue4-rts-selection-box/
     * https://logins.github.io/graphics/2021/05/31/RenderGraphs.html#parallel-command-list-recording
     * https://jinyuliao.github.io/blog/html/2017/12/15/ue4_dialogue_system_part1.html
+	* https://github.com/BillEliot/GASDocumentation_Chinese
   - Old wiki
     * https://nerivec.github.io/old-ue4-wiki/index.html
   - MultiThread
@@ -74,6 +76,7 @@ sidebar: uecheetsheet
     * https://rwiiug.hatenablog.com/entry/UE4_OtegaruTransition
 
 ### Library
+ - http://nikoladimitroff.github.io/Game-Engine-Architecture/
  - https://opensourcelibs.com/lib/ue4-cheatsheet
  - CEDIL https://cedil.cesa.or.jp/
  - https://www.docswell.com/user/EpicGamesJapan?page=1
@@ -84,6 +87,7 @@ sidebar: uecheetsheet
  - https://ue5wiki.com/
  - https://gregory-igehy.hatenadiary.com/entry/2017/12/28/002645
  - http://www.teal-game.com/blog/customcrashreporter/
+ - https://ikrima.dev/
 
 ### Animation
 - Vertex Animation
