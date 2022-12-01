@@ -9,6 +9,8 @@ sidebar: uecheetsheet
     * https://github.com/EpicGames/UnrealEngine/pull/1552
     * https://aqu.hatenablog.com/entry/2018/07/09/000805
     * https://forums.unrealengine.com/t/toon-shading-model/30226
+	* https://darkcatgame.tistory.com/28
+	* https://www.4gamer.net/games/467/G046741/20210826001/
  - Texture
     * https://gameinstitute.qq.com/community/detail/101476
     * https://www.gamedevelopment.blog/texture-filter/
