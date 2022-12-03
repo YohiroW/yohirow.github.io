@@ -29,6 +29,7 @@ sidebar: uecheetsheet
 	* https://github.com/google/filament
   - Blog
     * http://karim.naaji.fr/posts.html
+	* https://fgiesen.wordpress.com/2011/07/09/a-trip-through-the-graphics-pipeline-2011-index/
 
 ### Engine
   - Framework
