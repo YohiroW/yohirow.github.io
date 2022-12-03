@@ -63,6 +63,7 @@ sidebar: uecheetsheet
     * https://glhub.blogspot.com/search/label/Chaos
     * https://matthias-research.github.io/pages/publications/publications.html
     * http://blog.mmacklin.com/
+	* 3DCollision https://gdbooks.gitbooks.io/3dcollisions/content/Chapter2/static_aabb_plane.html 
   - Other
     * https://jashking.github.io/2018/04/20/ue4-filesystem/
 
