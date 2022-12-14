@@ -39,7 +39,7 @@ sidebar: uecheetsheet
     * https://logins.github.io/graphics/2021/05/31/RenderGraphs.html#parallel-command-list-recording
     * https://jinyuliao.github.io/blog/html/2017/12/15/ue4_dialogue_system_part1.html
 	* https://github.com/BillEliot/GASDocumentation_Chinese
-	* https://qiita.com/YuukiOgino/items/07fec724d4a2bb2a9403
+	* https://qiita.com/YuukiOgino/items/07fec724d4a2bb2a9403/ https://forums.unrealengine.com/t/blueprint-wall-jump-fail/3062/9
 	* https://qiita.com/EGJ-Takashi_Suzuki/items/33449c17c61d1ed30079
   - Old wiki
     * https://nerivec.github.io/old-ue4-wiki/index.html
