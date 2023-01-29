@@ -71,7 +71,8 @@ sidebar: uecheetsheet
     * https://www.jianshu.com/p/ecc9785f211d
   - Other
     * https://jashking.github.io/2018/04/20/ue4-filesystem/
-
+    * Automation https://www.slideshare.net/EpicGamesJapan/ue4-137253042
+    * https://www.slideshare.net/EpicGamesJapan/ue4-137253042
 ### Optimization
   - https://80.lv/articles/bird-house-working-on-a-stylized-landscape-in-ue4
   - https://www.famitsu.com/news/201910/16184681.html
