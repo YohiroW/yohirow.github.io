@@ -75,6 +75,7 @@ sidebar: uecheetsheet
     * https://www.jianshu.com/p/ecc9785f211d
   - Automation
     * BuildGraph https://jackknobel.com/How-To/BuildGraph
+    * UBT https://de45xmedrsdbp.cloudfront.net/Resources/files/BuildTools-2031748007.pdf
   - Other
     * https://jashking.github.io/2018/04/20/ue4-filesystem/
     * Automation https://www.slideshare.net/EpicGamesJapan/ue4-137253042
