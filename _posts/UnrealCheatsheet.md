@@ -73,6 +73,8 @@ sidebar: uecheetsheet
   	* https://medium.com/@bryan.corell/using-async-collision-traces-in-unreal-engine-4-2cc312c825f5
   - Pipeline
     * https://www.jianshu.com/p/ecc9785f211d
+  - Automation
+    * BuildGraph https://jackknobel.com/How-To/BuildGraph
   - Other
     * https://jashking.github.io/2018/04/20/ue4-filesystem/
     * Automation https://www.slideshare.net/EpicGamesJapan/ue4-137253042
