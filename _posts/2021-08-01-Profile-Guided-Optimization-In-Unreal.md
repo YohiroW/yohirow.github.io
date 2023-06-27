@@ -20,7 +20,7 @@ img_path: /assets/images/PGOInUnreal/
 
 ### 构建用于PGO的版本
 
-  首先需要构建用于收集分析数据的PGO版本。PGO版本中，宏`ENABLE_PGO_PROFILE`应该被启用，否则不会输出PGO的临时文件:
+  首先需要构建用于收集分析数据的PGO版本。添加命令行`-PGOProfile`以开启相应的宏:
 
   ```csharp
   /* --- TargetRules.cs --- */
@@ -41,6 +41,8 @@ img_path: /assets/images/PGOInUnreal/
     GlobalCompileEnvironment.Definitions.Add("ENABLE_PGO_PROFILE=0");
   }
   ```
+
+  PGO版本中，宏`ENABLE_PGO_PROFILE`应该被启用，否则不会输出PGO的临时文件：
 
   ```cpp
   /* --- PlatformMisc.cpp --- */
