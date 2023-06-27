@@ -83,7 +83,7 @@ img_path: /assets/images/PGOInUnreal/
   public string PgcFilenamePrefix;
   ```
 
-## 通过UAT启动测试
+#### 通过UAT启动测试
 
   使用UAT运行指定的测试用例。可以加入到bat文件里，方便集成到Jenkins一类的CI里：
 
@@ -112,14 +112,6 @@ img_path: /assets/images/PGOInUnreal/
   rem ********************* End   Gauntlet Test *********************
   pause
   ```
-
-### 合并为Profdata
-
-  等待测试完成。如果无误的话，将会在`ProfileOutputDirectory`下面生成扩展名为`*.profraw`的文件。在Gauntlet的测试流程中，当流程结束，这些`*.profraw`文件会由UAT调用`llvm-profdata`合并成为一个`*.profdata`文件。
-
-### 使用PGOOptimize
-
-  当启用`PGOOptimize`时，我们收集到的`*.profdata`应位于目录`\{ProjectName}\Platforms\{PlatformName}\Build\PGO\`下，具体的文件名称要在不同平台的`UEBuild{Platform}.cs`中查询。
 
 ## 注意事项
 
