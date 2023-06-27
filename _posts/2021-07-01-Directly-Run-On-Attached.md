@@ -5,7 +5,7 @@ date: 2021-07-01 14:10:00 +0800
 categories: [Debug]
 tags: [unrealengine, visualstudio, extension, tool]
 render_with_liquid: false
-img_path: /images/DirectlyRunOnAttached/
+img_path: /assets/images/DirectlyRunOnAttached/
 ---
 
 ## 背景
@@ -50,7 +50,7 @@ img_path: /images/DirectlyRunOnAttached/
 
 - 这个时候已经可以运行了，但是为了一键Attach，我们得把它绑定到一个按键上
   菜单栏找*Tools->Customize->Commands标签下*选择*ToolBar->Standard*，这里看个人习惯，我放到了工具栏上Standard栏，右侧*Add Command*找到要执行的Command<br>
-    ![Add_Customize_Command](AddCommand.png)
+    ![Add_Customize_Command](AddCommand.png)<br>
   Extensions目录下找到相应的Command，不记得是第几个可以在VCmd的Command编辑界面看看左上角
 
 - 然后Preview里面选中后可以移动到合适的位置或者*Modify Selection*改个喜欢的名字<br>
