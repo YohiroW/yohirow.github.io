@@ -50,9 +50,9 @@ img_path: /assets/images/PGOInUnreal/
     PGO_WriteFile();
   #endif
   ```
-
+  
   可以通过在build时传入指定的参数`-PGOProfile`来控制是否开启`ENABLE_PGO_PROFILE`。默认情况下打开PGOProfile后也会打开LTO，因此链接时间会变得非常长。
-
+  
 ### 运行时收集数据
 
   接下来需要启动游戏正常游玩、正常退出。因为只有在`RequestExit()`时才会在`PGO_WriteFile`中调用`__llvm_profile_write_file`即写入扩展名为`*.profraw`的临时文件。
@@ -114,7 +114,7 @@ img_path: /assets/images/PGOInUnreal/
 ## 参考资料
 
 - [Gauntlet Automation Framework](https://qiita.com/donbutsu17/items/cd17d500a9fed143e061) 介绍Gauntlet测试框架，可以搭配官方文档一起看
-- [GAUNTLET AUTOMATED TESTING AND PERFORMANCE METRICS IN UE4](https://horugame.com/gauntlet-automated-testing-and-performance-metrics-in-ue4/) 古早版本中Gauntlet，可以当作参考
+- [GAUNTLET AUTOMATED TESTING AND PERFORMANCE METRICS IN UE4](https://horugame.com/gauntlet-automated-testing-and-performance-metrics-in-ue4/) 早期版本中Gauntlet，可以当作参考
 - [実行速度の最適化のあれこれ](https://www.docswell.com/s/EpicGamesJapan/ZEEL7Z-UE4_LargeScaleDevSQEX_Optimize#p31) 介绍了基于Sample的PGO
 - [Daedalic Test Automation Plugin](https://github.com/DaedalicEntertainment/ue4-test-automation) Github上一款开源的UE的自动测试插件，对Gauntlet也进行了封装
 - [使用配置文件引导的优化 (PGO)](https://source.android.google.cn/devices/tech/perf/pgo) Android项目中使用PGO
