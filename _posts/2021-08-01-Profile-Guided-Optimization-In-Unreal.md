@@ -64,9 +64,15 @@ img_path: /assets/images/PGOInUnreal/
   Gauntlet中已经有一个PGO的测试节点`Gauntlet.UnrealPGONode.cs`，其中PGOConfig有下面几个参数，可通过命令行传入给UAT，其中`ProfileOutputDirectory`是必需的。
 
   ```csharp
+  /// <summary>
+  /// Output directory to write the resulting profile data to.
+  /// </summary>
   [AutoParam("")]
   public string ProfileOutputDirectory;
 
+  /// <summary>
+  /// Directory to save periodic screenshots to whilst the PGO run is in progress.
+  /// </summary>
   [AutoParam("")]
   public string ScreenshotDirectory;
 
