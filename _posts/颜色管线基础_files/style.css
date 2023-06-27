@@ -1,0 +1,54 @@
+@font-face {
+  font-family: 'udn-icon-set';
+  src:  url('fonts/udn-icon-set.eot?eqpyrv');
+  src:  url('fonts/udn-icon-set.eot?eqpyrv#iefix') format('embedded-opentype'),
+    url('fonts/udn-icon-set.ttf?eqpyrv') format('truetype'),
+    url('fonts/udn-icon-set.woff?eqpyrv') format('woff'),
+    url('fonts/udn-icon-set.svg?eqpyrv#udn-icon-set') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+[class^="udn-ico-"], [class*=" udn-ico-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'udn-icon-set' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.udn-ico-unrealengine:before {
+  content: "\e901";
+}
+.udn-ico-epicgames:before {
+  content: "\e900";
+}
+.udn-ico-facebook2:before {
+  content: "\ea91";
+}
+.udn-ico-instagram:before {
+  content: "\ea92";
+}
+.udn-ico-twitter:before {
+  content: "\ea96";
+}
+.udn-ico-rss:before {
+  content: "\ea9b";
+}
+.udn-ico-youtube:before {
+  content: "\ea9d";
+}
+.udn-ico-twitch:before {
+  content: "\ea9f";
+}
+.udn-ico-linkedin:before {
+  content: "\eac9";
+}
