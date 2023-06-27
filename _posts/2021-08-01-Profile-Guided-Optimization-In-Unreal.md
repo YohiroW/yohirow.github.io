@@ -58,7 +58,8 @@ img_path: /assets/images/PGOInUnreal/
   接下来需要启动游戏正常游玩、正常退出。因为只有在`RequestExit()`时才会在`PGO_WriteFile`中调用`__llvm_profile_write_file`即写入扩展名为`*.profraw`的临时文件。
   该临时文件的输出目录可由命令行参数指定，但由于实现的问题，在不同的平台中，命令行参数有所不同，在启动时不指定输出目录，便会将该文件写入到默认位置，详情可参照`PGO_GetOutputDirectory`函数。
 
-### 创建Gauntlet的测试用例<可选>
+<details>
+  <summary>创建Gauntlet的测试用例<可选></summary>
 
   如果需要集成到自动测试流程中，需要创建测试用例并添加该测试至Gauntlet的项目里。这个过程可以参考`Engine\Source\Programs\AutomationTool\Gauntlet\Unreal\Game`下的Samples。
   Gauntlet中已经有一个PGO的测试节点`Gauntlet.UnrealPGONode.cs`，其中PGOConfig有下面几个参数，可通过命令行传入给UAT，其中`ProfileOutputDirectory`是必需的。
@@ -82,8 +83,6 @@ img_path: /assets/images/PGOInUnreal/
   [AutoParam("")]
   public string PgcFilenamePrefix;
   ```
-
-#### 通过UAT启动测试
 
   使用UAT运行指定的测试用例。可以加入到bat文件里，方便集成到Jenkins一类的CI里：
 
@@ -112,6 +111,8 @@ img_path: /assets/images/PGOInUnreal/
   rem ********************* End   Gauntlet Test *********************
   pause
   ```
+
+</details>
 
 ## 注意事项
 
