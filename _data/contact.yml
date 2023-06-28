@@ -12,7 +12,7 @@
   noblank: true # open link in current tab
 
 - type: blog
-  icon: "fa fa-blog"
+  icon: "fa fa-link"
   url: "https://huoguohaoye.art/"
 
 # Uncomment and complete the url below to enable more contact options
