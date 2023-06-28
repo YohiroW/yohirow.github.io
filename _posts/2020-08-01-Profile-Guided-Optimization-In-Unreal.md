@@ -1,7 +1,7 @@
 ---
 title: UE4中的PGO
 author: Yohiro
-date: 2021-08-01
+date: 2020-08-01
 categories: [UnrealEngine]
 tags: [unrealengine, optimization, tool]
 render_with_liquid: false
@@ -14,7 +14,7 @@ img_path: /assets/images/PGOInUnreal/
 
 ## 流程
 
-按照Epic的流程，PGO可以直接启用，也可以搭配`Gauntlet自动测试框架`集成到自动测试流程中使用。关于Gauntlet框架的可参考官方文档[**Gauntlet自动化框架**](https://docs.unrealengine.com/4.27/zh-CN/TestingAndOptimization/Automation/Gauntlet/)。PGO整体的大致流程如图：
+按照Epic的流程，PGO可以直接启用，也可以搭配`Gauntlet自动测试框架`集成到自动测试流程中使用。关于Gauntlet框架的可参考官方文档[**Gauntlet自动化框架**](https://docs.unrealengine.com/4.26/zh-CN/TestingAndOptimization/Automation/Gauntlet/)。PGO整体的大致流程如图：
 
 ![Progress2](Progress2.png)
 
