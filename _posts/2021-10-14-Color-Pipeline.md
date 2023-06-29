@@ -5,10 +5,8 @@ date: 2021-10-14
 categories: [Rendering]
 tags: [engine, unrealengine, colorspace, HDR]
 math: true
+render_with_liquid: false
 img_path: /assets/images/ColorPipeline/
-image:
-  path: rtaImage (5).png
-  alt: Basic Color Pipeline in UnrealEngine
 ---
 
 在处理材质贴图、Sampler或RenderTarget时，经常会看到sRGB/Linear字样。颜色在渲染时是如何编码解码的？在不同的阶段是怎样的颜色类型？发生怎样的转换？这篇文章尝试回答这些问题。
