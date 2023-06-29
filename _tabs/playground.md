@@ -4,4 +4,10 @@ icon: fa-solid fa-gamepad
 order: 4
 ---
 
-<iframe src="http://bl.ocks.org/mbostock/raw/4061502/" width="650" height="450" frameborder=”0” marginwidth="0" marginheight="0" scrolling="no"></iframe>
+<div id='cube' style="--aspect-ratio:16/9;">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
+        <div id="param" class="dat-gui">
+            <script type="text/javascript" src="/assets/js/playground.js">
+        </div>        
+    </script>
+</div>
