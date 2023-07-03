@@ -4,10 +4,10 @@ icon: fa-solid fa-gamepad
 order: 4
 ---
 
-<div id='cube' style="--aspect-ratio:16/9;">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js">
-        <div id="param" class="dat-gui">
-            <script type="text/javascript" src="/assets/js/playground.js"></script>
-        </div>        
-    </script>
+<div class='threejs'>
+    <div id='cube'></div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
+<link rel="stylesheet" href="/assets/style.scss">
+<script src='/assets/js/playground.js'></script>
