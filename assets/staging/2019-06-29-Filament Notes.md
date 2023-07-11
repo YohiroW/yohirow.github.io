@@ -71,6 +71,35 @@ _忽略了BTDF的BRDF模型中的$f_d$和$f_r$_
 
 $$f(v,l)=f_d(v,l)+f_r(v,l)$$
 
+上述方程描述的是单一入射光，完整的渲染方程中将会对整个半球面上的入射光线 $l$ 进行积分。
+
+通常，材质表面并非是完全光滑的，因此引入了微表面模型/微表面BRDF
+![](diagram_microfacet.png)
+_微表面模型的粗糙表面和光滑表面_
+
+在微表面，法线N位于入射光和观察方向之间的半角方向时会反射可见光。
+![microsurface](diagram_macrosurface.png){: .w-50 }
+
+但是也并非所有符合上面条件的法线会贡献反射，因为微表面BRDF会考虑材质表面的遮蔽而产生的自阴影。
+![shadow masking](diagram_shadowing_masking.png){: .w-50 }
+
+粗糙度高的材质，表面朝向相机的面越少，表现为越模糊，因为入射光的能量被分散了。
+![](diagram_roughness.png)
+_光照对不同粗糙度的影响，从左到右表面逐渐光滑_
+
+下面的方程描述了微表面模型：
+
+$$\begin{equation}
+f_x(v,l) = \frac{1}{|n \cdot v| |n \cdot l|}
+\int_\Omega D(m,\alpha) G(v,l,m) f_m(v,l,m) (v \cdot m) (l \cdot m) dm
+\end{equation}$$
+
+![](diagram_micro_vs_macro.png)
+
+![](diagram_fr_fd.png)
+![](diagram_scattering.png)
+![](diagram_brdf_dielectric_conductor.png)
+
 ## Specular BRDF
 
 在Cook-Torrance的微表面模型中，Specular BRDF可描述为，
@@ -81,7 +110,7 @@ f_r(v,l) = \frac{D(h, \alpha) G(v, l, \alpha) F(v, h, f0)}{4 (n \cdot v)(n \cdot
 
 在实时渲染领域常采用对D、G、F项的近似，[**这里**](http://graphicrants.blogspot.com/2013/08/specular-brdf-reference.html)提供了更多关于Specular BRDF的参考。
 
-- **D**
+- **D 正态分布函数(Normal Distribution Function)**
 
     正态分布函数（NDF）是描述现实世界物体表面分布的一种方式，但在实时渲染领域常用的是Walter描述的GGX分布，GGX具有长衰减和短峰值的特点，GGX的分布函数如下：
 
@@ -101,18 +130,18 @@ f_r(v,l) = \frac{D(h, \alpha) G(v, l, \alpha) F(v, h, f0)}{4 (n \cdot v)(n \cdot
     }
     ```
 
-    一个常见的优化手段是使用半精度的浮点数，即`half`类型进行计算。但这种优化方式需要改变原公式，因为公式展开中的$1-(n \cdot h)^2$项的精度问题：
+    一个常见的优化手段是使用半精度的浮点数，即`half`类型进行计算。因为公式展开中的$1-(n \cdot h)^2$项存在`精度问题`：
     
     - 高光情况下，即当$(n \cdot h)^2$接近1时，该项会因为浮点数的差值计算问题被截断，导致结果为零。
     - $n \cdot h$本身在接近1时缺少足够的精度。
     
-    解决方式是用叉积的展开式代换，
+    为避免精度造成的问题，可以用叉积的展开式代换，
 
     $$\begin{equation}
     | a \times b |^2 = |a|^2 |b|^2 - (a \cdot b)^2
     \end{equation}$$
 
-    由于$n$和$l$是单位向量，便有 $|n \times h|^2 = 1 - (n \cdot h)^2$ 。这样一来，我们便可以直接使用叉积来直接计算$1-(n \cdot h)^2$了，Filament中的实现如下
+    由于$n$和$l$是单位向量，便有 $|n \times h|^2 = 1 - (n \cdot h)^2$ 。这样一来，我们便可以直接使用叉积来直接计算$1-(n \cdot h)^2$，Filament中的实现如下
     ```c
     #define MEDIUMP_FLT_MAX    65504.0
     #define saturateMediump(x) min(x, MEDIUMP_FLT_MAX)
@@ -126,9 +155,12 @@ f_r(v,l) = \frac{D(h, \alpha) G(v, l, \alpha) F(v, h, f0)}{4 (n \cdot v)(n \cdot
     }
     ```
 
-- **G**
+- **G 几何阴影（Geometric Shadowing）**
 
-- **F**
+
+
+- **F 菲涅尔（Fresnel）**
+
 
 ### 法线分布函数
 
@@ -183,3 +215,5 @@ f_r(v,l) = \frac{D(h, \alpha) G(v, l, \alpha) F(v, h, f0)}{4 (n \cdot v)(n \cdot
 ## 坐标系
 
 # 附件
+
+- [physically-based-shading-on-mobile](https://www.unrealengine.com/en/blog/physically-based-shading-on-mobile)
