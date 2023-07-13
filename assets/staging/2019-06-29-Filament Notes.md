@@ -110,65 +110,176 @@ f_r(v,l) = \frac{D(h, \alpha) G(v, l, \alpha) F(v, h, f0)}{4 (n \cdot v)(n \cdot
 
 在实时渲染领域常采用对D、G、F项的近似，[**这里**](http://graphicrants.blogspot.com/2013/08/specular-brdf-reference.html)提供了更多关于Specular BRDF的参考。
 
-- **D 正态分布函数(Normal Distribution Function)**
+### D 正态分布函数(Normal Distribution Function)
 
-    正态分布函数（NDF）是描述现实世界物体表面分布的一种方式，但在实时渲染领域常用的是Walter描述的GGX分布，GGX具有长衰减和短峰值的特点，GGX的分布函数如下：
+正态分布函数（NDF）是描述现实世界物体表面分布的一种方式，但在实时渲染领域常用的是Walter描述的GGX分布，GGX具有长衰减和短峰值的特点，GGX的分布函数如下：
 
-    $$\begin{equation}
-    D_{GGX}(h,\alpha) = \frac{\alpha^2}{\pi ( (n \cdot h)^2 (\alpha^2 - 1) + 1)^2}
-    \end{equation}$$
+$$\begin{equation}
+D_{GGX}(h,\alpha) = \frac{\alpha^2}{\pi ( (n \cdot h)^2 (\alpha^2 - 1) + 1)^2}
+\end{equation}$$
 
 
-    下面是来自UnrealEngine中的实现，其中a2是$\alpha^2$
-    ```c
-    // GGX / Trowbridge-Reitz
-    // [Walter et al. 2007, "Microfacet models for refraction through rough surfaces"]
-    float D_GGX( float a2, float NoH )
-    {
-        float d = ( NoH * a2 - NoH ) * NoH + 1;	// 2 mad
-        return a2 / ( PI*d*d );					// 4 mul, 1 rcp
-    }
-    ```
+下面是来自UnrealEngine中的实现，其中a2是$\alpha^2$
+```hlsl
+// GGX / Trowbridge-Reitz
+// [Walter et al. 2007, "Microfacet models for refraction through rough surfaces"]
+float D_GGX( float a2, float NoH )
+{
+    float d = ( NoH * a2 - NoH ) * NoH + 1;	// 2 mad
+    return a2 / ( PI*d*d );					// 4 mul, 1 rcp
+}
+```
 
-    一个常见的优化手段是使用半精度的浮点数，即`half`类型进行计算。因为公式展开中的$1-(n \cdot h)^2$项存在`精度问题`：
+一个常见的优化手段是使用半精度的浮点数，即`half`类型进行计算。因为公式展开中的$1-(n \cdot h)^2$项存在`精度问题`：
+
+- 高光情况下，即当$(n \cdot h)^2$接近1时，该项会因为浮点数的差值计算问题被截断，导致结果为零。
+- $n \cdot h$本身在接近1时缺少足够的精度。
+
+为避免精度造成的问题，可以用叉积的展开式代换，
+
+$$\begin{equation}
+| a \times b |^2 = |a|^2 |b|^2 - (a \cdot b)^2
+\end{equation}$$
+
+由于$n$和$l$是单位向量，便有 $|n \times h|^2 = 1 - (n \cdot h)^2$ 。这样一来，我们便可以直接使用叉积来直接计算$1-(n \cdot h)^2$，Filament中的实现如下
+```glsl
+#define MEDIUMP_FLT_MAX    65504.0
+#define saturateMediump(x) min(x, MEDIUMP_FLT_MAX)
+
+float D_GGX(float roughness, float NoH, const vec3 n, const vec3 h) {
+    vec3 NxH = cross(n, h);
+    float a = NoH * roughness;
+    float k = roughness / (dot(NxH, NxH) + a * a);
+    float d = k * k * (1.0 / PI);
+    return saturateMediump(d);
+}
+```
+
+### G 几何阴影（Geometric Shadowing）
+
+根据*Heitz 2014, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"*，常用的Smith几何阴影公式如下： 
+
+$$\begin{equation}
+G(v,l,\alpha) = G_1(l,\alpha) G_1(v,\alpha)
+\end{equation}$$
+
+其中$G_1$可使用多种模型，实时渲染中常使用GGX公式，
+
+$$\begin{equation}
+G_1(v,\alpha) = G_{GGX}(v,\alpha) = \frac{2 (n \cdot v)}{n \cdot v + \sqrt{\alpha^2 + (1 - \alpha^2) (n \cdot v)^2}}
+\end{equation}$$
+
+完整版即为，
+
+$$\begin{equation}
+G(v,l,\alpha) = \frac{2 (n \cdot l)}{n \cdot l + \sqrt{\alpha^2 + (1 - \alpha^2) (n \cdot l)^2}} \frac{2 (n \cdot v)}{n \cdot v + \sqrt{\alpha^2 + (1 - \alpha^2) (n \cdot v)^2}}
+\end{equation}$$
+
+注意到$G(v,l,\alpha)$的分子为$4(n \cdot l) (n \cdot v)$这里再贴一次我们所使用的specular BRDF，
+
+$$\begin{equation}
+f_r(v,l) = \frac{D(h, \alpha) G(v, l, \alpha) F(v, h, f0)}{4 (n \cdot v)(n \cdot l)}
+\end{equation}$$
+
+通过引入可见性函数Visibility项$V(v,l,\alpha)$，将$f_r$变为：
+
+$$\begin{equation}
+f_r(v,l) = D(h, \alpha) V(v, l, \alpha) F(v, h, f_0)
+\end{equation}$$   
+
+其中
+
+$$\begin{equation}
+V(v,l,\alpha) = \frac{G(v, l, \alpha)}{4 (n \cdot v) (n \cdot l)} = V_1(l,\alpha) V_1(v,\alpha)
+\end{equation}$$
+
+便可消去分子，得到
+
+$$\begin{equation}
+V_1(v,\alpha) = \frac{1}{n \cdot v + \sqrt{\alpha^2 + (1 - \alpha^2) (n \cdot v)^2}}
+\end{equation}$$
+
+论文指出，通过引入微表面的高度来建模可以得到更好的结果。引入了高度$h$的Smith函数：
+
+$$\begin{equation}
+G(v,l,h,\alpha) = \frac{\chi^+(v \cdot h) \chi^+(l \cdot h)}{1 + \Lambda(v) + \Lambda(l)}
+\end{equation}$$
+
+$$\begin{equation}
+\Lambda(m) = \frac{-1 + \sqrt{1 + \alpha^2 tan^2(\theta_m)}}{2} = \frac{-1 + \sqrt{1 + \alpha^2 \frac{(1 - cos^2(\theta_m))}{cos^2(\theta_m)}}}{2}
+\end{equation}$$
+
+其中$\theta_m$是镜面法线$n$与观察方向$v$的夹角，因此有$cos(\theta_m) = n \cdot v$，代换后得到
+
+$$\begin{equation}
+\Lambda(v) = \frac{1}{2} \left( \frac{\sqrt{\alpha^2 + (1 - \alpha^2)(n \cdot v)^2}}{n \cdot v} - 1 \right)
+\end{equation}$$
+
+由此得出可见性函数，
+
+$$\begin{equation}
+V(v,l,\alpha) = \frac{0.5}{n \cdot l \sqrt{(n \cdot v)^2 (1 - \alpha^2) + \alpha^2} + n \cdot v \sqrt{(n \cdot l)^2 (1 - \alpha^2) + \alpha^2}}
+\end{equation}$$
+
+Unreal中的实现如下：
+```hlsl
+// [Heitz 2014, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"]
+float Vis_SmithJoint(float a2, float NoV, float NoL) 
+{
+    float Vis_SmithV = NoL * sqrt(NoV * (NoV - NoV * a2) + a2);
+    float Vis_SmithL = NoV * sqrt(NoL * (NoL - NoL * a2) + a2);
+    return 0.5 * rcp(Vis_SmithV + Vis_SmithL);
+}
+```
+
+考虑到根号下都是平方项，且每项∈[0,1]，于是可优化为：
+
+$$\begin{equation}
+V(v,l,\alpha) = \frac{0.5}{n \cdot l (n \cdot v (1 - \alpha) + \alpha) + n \cdot v (n \cdot l (1 - \alpha) + \alpha)}
+\end{equation}$$
+
+虽然在数学上是错的，但对于移动设备的实时渲染是足够的。Filament中的实现如下:
+
+```glsl
+float V_SmithGGXCorrelatedFast(float NoV, float NoL, float roughness) {
+    float a = roughness;
+    float GGXV = NoL * (NoV * (1.0 - a) + a);
+    float GGXL = NoV * (NoL * (1.0 - a) + a);
+    return 0.5 / (GGXV + GGXL);
+}
+```
+
+[Hammon17]提出了相似的优化思路，通过插值来实现：
+
+$$\begin{equation}
+V(v,l,\alpha) = \frac{0.5}{lerp(2 (n \cdot l) (n \cdot v), (n \cdot l) + (n \cdot v), \alpha)}
+\end{equation}$$
+
+### F 菲涅尔（Fresnel）
     
-    - 高光情况下，即当$(n \cdot h)^2$接近1时，该项会因为浮点数的差值计算问题被截断，导致结果为零。
-    - $n \cdot h$本身在接近1时缺少足够的精度。
-    
-    为避免精度造成的问题，可以用叉积的展开式代换，
+菲涅尔项定义了`光在两种不同介质的交界处如何处理反射和折射`，或者说`反射的能量与透射的能量的比率`。
 
-    $$\begin{equation}
-    | a \times b |^2 = |a|^2 |b|^2 - (a \cdot b)^2
-    \end{equation}$$
+反射光的强度不仅取决于视角，还取决于材质的折射率IOR。将入射光线垂直于表面时（Normal）反射率记为$f_0$，掠射角（Grazing）反射率记为$f_{90}$。根据[Schlick94]描述，在Cook-Torrance的微表面模型中，Specular BRDF的菲涅尔项的一种近似可写为：
 
-    由于$n$和$l$是单位向量，便有 $|n \times h|^2 = 1 - (n \cdot h)^2$ 。这样一来，我们便可以直接使用叉积来直接计算$1-(n \cdot h)^2$，Filament中的实现如下
-    ```c
-    #define MEDIUMP_FLT_MAX    65504.0
-    #define saturateMediump(x) min(x, MEDIUMP_FLT_MAX)
+$$\begin{equation}
+F_{Schlick}(v,h,f_0,f_{90}) = f_0 + (f_{90} - f_0)(1 - v \cdot h)^5
+\end{equation}$$
 
-    float D_GGX(float roughness, float NoH, const vec3 n, const vec3 h) {
-        vec3 NxH = cross(n, h);
-        float a = NoH * roughness;
-        float k = roughness / (dot(NxH, NxH) + a * a);
-        float d = k * k * (1.0 / PI);
-        return saturateMediump(d);
-    }
-    ```
+Unreal的实现如下：
 
-- **G 几何阴影（Geometric Shadowing）**
+```hlsl
+float3 F_Schlick(float3 F0, float3 F90, float VoH)
+{
+    float Fc = Pow5(1 - VoH);
+    return F90 * Fc + (1 - Fc) * F0;
+}
+```
 
-
-
-- **F 菲涅尔（Fresnel）**
-
-
-### 法线分布函数
-
-### 表面几何阴影
-
-### 菲涅尔
+该菲涅尔函数可当作入射反射率和掠射角反射率间的插值，可以取$f_{90}$为1.0来达到近似。
 
 ## Diffuse BRDF
+    
+
 
 ## 标准模型总结
 
