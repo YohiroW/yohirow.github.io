@@ -278,8 +278,71 @@ float3 F_Schlick(float3 F0, float3 F90, float VoH)
 该菲涅尔函数可当作入射反射率和掠射角反射率间的插值，可以取$f_{90}$为1.0来达到近似。
 
 ## Diffuse BRDF
-    
 
+漫反射中常用Lambertian函数，漫反射的BRDF：
+
+$$\begin{equation}
+f_d(v,l) = \frac{\sigma}{\pi} \frac{1}{| n \cdot v | | n \cdot l |}
+\int_\Omega D(m,\alpha) G(v,l,m) (v \cdot m) (l \cdot m) dm
+\end{equation}$$
+
+Filament中的实现，假定微表面半球面产生均一的漫反射，因此一个简单的Lambertian BRDF为
+
+$$\begin{equation}
+f_d(v,l) = \frac{\sigma}{\pi}
+\end{equation}$$
+
+实现也非常简单，
+
+```glsl
+float Fd_Lambert() {
+    return 1.0 / PI;
+}
+
+vec3 Fd = diffuseColor * Fd_Lambert();
+```
+
+迪士尼的BRDF和Oren-Nayar模型都考虑到了粗糙度的影响，并会在掠射角出产生细微的逆反射。迪士尼的Diffuse BRDF如下：
+
+$$\begin{equation}
+f_d(v,l) = \frac{\sigma}{\pi} F_{Schlick}(n,l,1, f_{90}) F_{Schlick}(n,v,1,f_{90})
+\end{equation}$$
+
+其中
+
+$$\begin{equation}
+f_{90}=0.5 + 2 \cdot \alpha cos^2(\theta_d)
+\end{equation}$$
+
+Unreal中对这两种模型的Diffuse BRDF的实现：
+
+```hlsl
+// [Burley 2012, "Physically-Based Shading at Disney"]
+float3 Diffuse_Burley( float3 DiffuseColor, float Roughness, float NoV, float NoL, float VoH )
+{
+	float FD90 = 0.5 + 2 * VoH * VoH * Roughness;
+	float FdV = 1 + (FD90 - 1) * Pow5( 1 - NoV );
+	float FdL = 1 + (FD90 - 1) * Pow5( 1 - NoL );
+	return DiffuseColor * ( (1 / PI) * FdV * FdL );
+}
+
+// [Gotanda 2012, "Beyond a Simple Physically Based Blinn-Phong Model in Real-Time"]
+float3 Diffuse_OrenNayar( float3 DiffuseColor, float Roughness, float NoV, float NoL, float VoH )
+{
+	float a = Roughness * Roughness;
+	float s = a;// / ( 1.29 + 0.5 * a );
+	float s2 = s * s;
+	float VoL = 2 * VoH * VoH - 1;		// double angle identity
+	float Cosri = VoL - NoV * NoL;
+	float C1 = 1 - 0.5 * s2 / (s2 + 0.33);
+	float C2 = 0.45 * s2 / (s2 + 0.09) * Cosri * ( Cosri >= 0 ? rcp( max( NoL, NoV ) ) : 1 );
+	return DiffuseColor / PI * ( C1 + C2 ) * ( 1 + Roughness * 0.5 );
+}
+```
+Lambertian diffuse BRDF 和 Disney diffuse BRDF的效果对比。从最左侧边缘可以看出，Disney的模型在掠射角有细微的不同。
+
+![](diagram_lambert_vs_disney.png)
+_Lambertian diffuse BRDF（左）和 Disney diffuse BRDF（右）_
 
 ## 标准模型总结
 
