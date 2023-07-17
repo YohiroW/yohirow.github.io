@@ -65,7 +65,7 @@ BRDF将标准材质的表面分为:
 - 镜面反射项 $f_r$  
 
 ![](diagram_fr_fd.png)
-_忽略了BTDF的BRDF模型中的$f_d$和$f_r$_
+_BRDF模型中的$f_d$和$f_r$_
 
 完整的表达为：
 
@@ -94,11 +94,24 @@ f_x(v,l) = \frac{1}{|n \cdot v| |n \cdot l|}
 \int_\Omega D(m,\alpha) G(v,l,m) f_m(v,l,m) (v \cdot m) (l \cdot m) dm
 \end{equation}$$
 
+其中D项描述微表面的法线分布，G项对微表面的几何性质（主要是阴影和遮蔽）进行描述。主要的不同来自于对半球微表面的积分$f_m$：
 ![](diagram_micro_vs_macro.png)
+_宏观层面的平面（左）和微观层面的微表面（右）_
+在微观层面上，材质的表面并非完全平坦，就`无法再假设所有的入射光是平行的`，因此需要对半球进行积分，但对半球的完整的积分在实时渲染中不切实际，因此需要采用近似值。
 
-![](diagram_fr_fd.png)
-![](diagram_scattering.png)
-![](diagram_brdf_dielectric_conductor.png)
+## 电介质和导体
+Filament里对材质属性引入了两个概念：电介质和导体。
+
+入射光照射到BRDF模拟的材质表面后，光被分解为漫反射和镜面反射两个分量，这是一种简化的模型。
+
+实际上，会有入射光穿透表面，在材质内部进行散射，最后再以漫反射的形式离开表面：
+![](diagram_scattering.png){: .w-75 }
+_漫反射的散射_
+
+这就是电介质和导体的区别。导体不会产生次表面散射，散射发生在电介质当中。
+
+![](diagram_brdf_dielectric_conductor.png){: .w-75 }
+_电介质和导体表面的BRDF模型_
 
 ## Specular BRDF
 
@@ -346,11 +359,82 @@ _Lambertian diffuse BRDF（左）和 Disney diffuse BRDF（右）_
 
 ## 标准模型总结
 
+镜面反射项
+: Cook-Torrance镜面反射微表面模型/GGX正态分布函数/Smith-GGX高度相关可见性函数/Schlick Fresnel函数
+
+漫反射项
+: Lambert漫反射模型
+
+标准模型的GLSL实现：
+
+```glsl
+float D_GGX(float NoH, float a) {
+    float a2 = a * a;
+    float f = (NoH * a2 - NoH) * NoH + 1.0;
+    return a2 / (PI * f * f);
+}
+
+vec3 F_Schlick(float u, vec3 f0) {
+    return f0 + (vec3(1.0) - f0) * pow(1.0 - u, 5.0);
+}
+
+float V_SmithGGXCorrelated(float NoV, float NoL, float a) {
+    float a2 = a * a;
+    float GGXL = NoV * sqrt((-NoL * a2 + NoL) * NoL + a2);
+    float GGXV = NoL * sqrt((-NoV * a2 + NoV) * NoV + a2);
+    return 0.5 / (GGXV + GGXL);
+}
+
+float Fd_Lambert() {
+    return 1.0 / PI;
+}
+
+void BRDF(...) {
+    vec3 h = normalize(v + l);
+
+    float NoV = abs(dot(n, v)) + 1e-5;
+    float NoL = clamp(dot(n, l), 0.0, 1.0);
+    float NoH = clamp(dot(n, h), 0.0, 1.0);
+    float LoH = clamp(dot(l, h), 0.0, 1.0);
+
+    // perceptually linear roughness to roughness (see parameterization)
+    float roughness = perceptualRoughness * perceptualRoughness;
+
+    float D = D_GGX(NoH, a);
+    vec3  F = F_Schlick(LoH, f0);
+    float V = V_SmithGGXCorrelated(NoV, NoL, roughness);
+
+    // specular BRDF
+    vec3 Fr = (D * V) * F;
+
+    // diffuse BRDF
+    vec3 Fd = diffuseColor * Fd_Lambert();
+
+    // apply lighting...
+}
+```
+
+
 ## 提升BRDF
 
-### 能量获取
+一个好的BRDF函数是能量守恒的，上述探讨的BRDF存在两个问题。
 
-### 能量损失
+### 漫反射获取的能量
+
+Lambert模型的Diffuse BRDF没有考虑表面反射的光
+
+### 镜面反射损失的能量
+
+Cook-Torrance BRDF在微表面上建模，但考虑的是单次光的反射，这种近似使得高粗糙度下存在能量损失，导致其表面的能量不守恒。
+![](diagram_single_vs_multi_scatter.png)
+_单次反射光与多重散射_
+
+基于此，可以说，表面越粗糙，产生的多重散射越多，从而能量损失的越多。这种能量的损失带来的结果便是材质会变暗，金属表面更易受到这种影响，因为金属材质的反射都是镜面反射，参见下图的对比：
+![](material_metallic_energy_loss.png)
+_仅考虑了单次散射的金属材质_
+
+![](material_metallic_energy_preservation.png)
+_考虑了多重散射的金属材质_
 
 ## 参量化
 
