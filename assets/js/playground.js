@@ -14,7 +14,7 @@ function init() {
 
   // scene
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(0xffffff);
+  scene.background = new THREE.Color(0xF9F6F1);
   geometry = new THREE.BoxGeometry(1, 1, 1);
   material = new THREE.MeshNormalMaterial();
   mesh = new THREE.Mesh(geometry, material);
