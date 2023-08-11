@@ -91,6 +91,9 @@ tags: [Memo, Reference]
   - https://stonelzp.github.io/ue4-performance/
   - https://www.docswell.com/s/EpicGamesJapan/ZEEL7Z-UE4_LargeScaleDevSQEX_Optimize#p53
   - https://zeux.io/2009/01/31/view-frustum-culling-optimization-introduction/
+  - Precision
+    https://bartwronski.com/2017/04/02/small-float-formats-r11g11b10f-precision/
+    https://randomascii.wordpress.com/2012/02/13/dont-store-that-in-a-float/
   
 ### UI
  - Transition
