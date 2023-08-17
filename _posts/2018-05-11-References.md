@@ -77,6 +77,7 @@ tags: [Memo, Reference]
     * http://blog.mmacklin.com/
   	* 3DCollision https://gdbooks.gitbooks.io/3dcollisions/content/Chapter2/static_aabb_plane.html
   	* https://medium.com/@bryan.corell/using-async-collision-traces-in-unreal-engine-4-2cc312c825f5
+    * https://github.com/SPARK-inc/SPCRJointDynamicsUE4
   - Pipeline
     * https://www.jianshu.com/p/ecc9785f211d
   - Automation
