@@ -35,6 +35,8 @@ tags: [Memo, Reference]
   - Blog
     * http://karim.naaji.fr/posts.html
   	* https://fgiesen.wordpress.com/2011/07/09/a-trip-through-the-graphics-pipeline-2011-index/
+    * https://mynameismjp.wordpress.com/2012/10/24/msaa-overview/
+    * http://aicdg.com/aa/
 
 ### Engine
   - Framework
