@@ -26,7 +26,7 @@ img_path: /assets/images/{}/
 在5.1以后的版本中，PlayerController已经是一个StreamingSourceComponent。
 ``` cpp
 class ENGINE_API APlayerController : public AController, 
-                                        public IWorldPartitionStreamingSourceProvider
+                                     public IWorldPartitionStreamingSourceProvider
 ```
 这个组件可以附加在任何Actor上，可以用于一些无缝CutScene的预加载。
 
@@ -159,7 +159,7 @@ WP与OFPA密不可分，因此需要考虑产生的额外的actor文件数量所
     更多的可以执行DumpConsoleCommands，将所有命令dump出来，wp相关的debug指令太多，下面仅列出一些常用的。
 
 | wp.Runtime.ToggleDrawRuntimeHash2D or 3D                                              | streaming grid可视化 | 
-| wp.Runtime.OverrideRuntimeSpatialHashLoadingRange \n -grid=[index] -range=[DesiredValue] | 覆写指定grid的加载距离 |
+| wp.Runtime.OverrideRuntimeSpatialHashLoadingRange -grid=[index] -range=[DesiredValue] | 覆写指定grid的加载距离 |
 | wp.runtime.hlod                                                                       | 显示HLOD |
 | wp.Runtime.RuntimeSpatialHashUseAlignedGridLevels                                     |       |
 | wp.Runtime.RuntimeSpatialHashSnapNonAlignedGridLevelsToLowerLevels                    |       |       
@@ -205,7 +205,6 @@ One File Per Actor(OFPA)
 #### GUID只能在UE里转为可读的名称
 
 #### 启用OFPA vs 不启用OFPA
-
 对于启用和不启用OFPA的Level Instances，他们的Streaming行为有所不同：
 
 启用OFPA：
@@ -224,11 +223,9 @@ One File Per Actor(OFPA)
 相较于5.0版本，5.1在获取文件状态方面做出了一些提升。用户确认是否可以对资产做出修改的一种方式是：在场景大纲下启用版本控制列，观察是否存在未保存的文件与版本控制内的文件有冲突。
 
 ## [**Level Instances和Packed Level Actors(PLA)**](https://docs.unrealengine.com/5.1/en-US/level-instancing-in-unreal-engine/)
-
 Level Instance和Packed Level Actor是5.x版本中实现Level Instance的两种方式，前者是Level级别的粒度，后者是Actor级别的粒度。
 
 ### Level Instance
-
 创建子关卡的Actor的集合，与4.x版本中基于关卡的workflow类似。当使用World Partition时，Level instance应该启用OFPA，因为启用OFPA后，引擎会在生成Streaming数据时将Level instance中的内容分离到Persistent关卡中的Streaming grid。如果Level instance不启用OFPA，那么它会被当作一个独立的Streaming level，在规模较大较复杂的场景中会导致性能和Streaming的问题。
 
 #### 特性
@@ -242,14 +239,12 @@ Level Instance和Packed Level Actor是5.x版本中实现Level Instance的两种�
 POI、房屋、内部陈设、建筑物的地板、村庄、Gameplay相关配置等。
 
 ### Packed Level Actor 
-
 一种由`Static mesh`（包括ISM/HISM）合并而来的`Blueprint actor`，Static mesh会被替换为链接到`Packed level actor`的`Packed level blueprint`。简单来说PLA是由许多ISM/HISM组件构成的Actor。PLA不可覆盖不可脚本话，它会在每次更新时重新创建，所以应应用于静态物件。
 
 #### 特性
 - 
 
 #### 适用场景
-
 静态建筑物、模型复用率高的拼合密度较高的大型物件等。
 
 ### 问题
@@ -302,3 +297,36 @@ World中每个没有启用OFPA的level instance都会创建一个独立的stream
 
 ## [**Data Layers**](https://docs.unrealengine.com/5.1/en-US/world-partition---data-layers-in-unreal-engine/)
 
+Data layer允许在运行时/编辑时限定数据加载的条件。Actor和World Partition决定了streaming的逻辑，Data Layer则像是一个过滤器，用于决定哪些关卡需要加载。
+
+### 运行时Data layer
+- 用于处理不同情景
+- 管理任务、游戏进度、事件等各种特定的数据
+- HLOD支持，创建的HLOD的状态会和Data layer的状态一同变化同时也是编辑器的Data layer
+- 运行时具有三种状态：
+    - Unloaded（unloaded and not visible）
+    - Loaded（loaded and not visible）
+    - Activated（loaded and visible）
+
+### 编辑器Data layer
+- 用于在编辑时组织内容
+- 为了更方便的编辑，数据相对独立
+- 预览运行时Data layer的内容
+- 存在仅编辑器可见的Data layer，在Cook版本和PIE中不可见
+- 编辑器Data layer的状态
+    - IsInitiallyVisible（加载world时，是否默认可见）
+    - IsInitiallyLoaded（加载world时，是否默认加载）
+    - Loaded 
+    - Visible
+    
+### 实践
+#### 使用仅编辑器可见的Data layer来分离数据
+使用编辑器Data layer可以将指定的数据如gameplay sequence和cinematic数据和其他的数据分离开。
+
+#### 预加载
+
+#### Data layer的负责人
+对于项目的Data layer，最好有技术人员制定它的结构，有条件的话，可以预先定义data layer的资产以匹配项目的结构和目标，比如任务/事件/游戏进程/工作类型等。
+
+#### 优化
+当满足一定条件，data layer可以减少加载的内容
