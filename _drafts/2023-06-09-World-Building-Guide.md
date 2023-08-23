@@ -288,7 +288,7 @@ World中每个没有启用OFPA的level instance都会创建一个独立的stream
 #### 黑客帝国demo
 - PLA用于除程序化生成的建筑物外其他的主要建筑物。
 - PLA还用于创建预制的屋顶
-- 所有过程化生成的建筑物、道路、屋顶、部分物件都由ISM构成（等同于PLA
+- 所有过程化生成的建筑物、道路、屋顶、部分物件都由ISM构成（等同于PLA·
 - 只有最基础的关卡保有逐模块的碰撞。
 - 产品的最后阶段，PCG流程停止了，PLA最终也被转换为了ISM actor。这么做都是为了能够手动修改物件，但该过程是不可逆的。
 
@@ -329,4 +329,43 @@ Data layer允许在运行时/编辑时限定数据加载的条件。Actor和Worl
 对于项目的Data layer，最好有技术人员制定它的结构，有条件的话，可以预先定义data layer的资产以匹配项目的结构和目标，比如任务/事件/游戏进程/工作类型等。
 
 #### 优化
-当满足一定条件，data layer可以减少加载的内容
+通过Data layer，可以在特定的Sequence或gameplay中移除不需要的关卡，也可以针对不同的平台进行优化，从而节省内存，提升性能。
+
+### 问题
+#### Data layer的规模
+- 运行时Data layer的创建应该被重点照顾，因为如WP一节所述，每一个cell中的actor对应的运行时Data layer都会创建一个新的Streaming level。过多使用运行时data layer会严重影响streaming的效率。
+- 不过使用运行时Data layer来处理特定的内容，比如每个任务或是某个主题的场景，是比较安全的行为，对全局的streaming效率没有太大影响。
+
+#### Actor上多个Data layer的组合
+
+#### Data layer和Streaming的混淆
+
+#### 使用Data layer加载太多东西
+
+### 限制
+
+####
+
+####
+
+###
+
+### 用例
+
+#### 堡垒之夜 第四章
+- 4个运行时Data layer，用于大厅/初始小岛
+- 1个运行时Data layer，用于赛季变动以及特殊事件
+
+#### 黑客帝国demo
+- 35个运行时Data layer
+- 32个编辑器Data layer
+    - Sequence以及Gameplay内容的streaming和卸载 
+    - Sequence特定的优化
+    - 多个仅编辑器的Data layer用于PCG生成
+
+#### 古代山谷demo
+2个运行时Data layer，1个Editor only
+
+## [**HLOD**](https://docs.unrealengine.com/5.1/en-US/world-partition---hierarchical-level-of-detail-in-unreal-engine/)
+
+### 
