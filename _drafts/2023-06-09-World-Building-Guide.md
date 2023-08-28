@@ -368,4 +368,9 @@ Data layer允许在运行时/编辑时限定数据加载的条件。Actor和Worl
 
 ## [**HLOD**](https://docs.unrealengine.com/5.1/en-US/world-partition---hierarchical-level-of-detail-in-unreal-engine/)
 
-### 
+WorldPartition HLOD与原先UE4.x中的HLOD不同在于，WorldPartition HLOD不是和单独的关卡相关联的，而是由Grid生成的。初此之外与原先的HLOD概念基本类似，都是Actor聚合所生成的低模代理。
+
+### 实践
+
+
+###

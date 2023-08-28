@@ -1,5 +1,5 @@
 ---
-title: Filament
+title: Filament笔记
 author: Yohiro
 date: 2019-06-29
 categories: [Rendering, graphics]
@@ -8,7 +8,7 @@ math: true
 img_path: /assets/images/Filament/
 ---
 
-大概是[**Filament**](https://google.github.io/filament/Filament.html)的翻译，以及部分自己的理解。
+大概是[**Filament**](https://google.github.io/filament/Filament.html)的笔记，以及部分自己的理解。
 
 可以结合Desktop的渲染方式一起，看Filament的渲染为了更好地支持移动端，舍弃了哪些。
 
@@ -419,13 +419,12 @@ void BRDF(...) {
 
 一个好的BRDF函数是能量守恒的，上述探讨的BRDF存在两个问题。
 
-### 漫反射获取的能量
+漫反射获取的能量
+: Lambert模型的Diffuse BRDF没有考虑表面反射的光
 
-Lambert模型的Diffuse BRDF没有考虑表面反射的光
+镜面反射损失的能量
+: Cook-Torrance BRDF在微表面上建模，但考虑的是单次光的反射，这种近似使得高粗糙度下存在能量损失，导致其表面的能量不守恒。
 
-### 镜面反射损失的能量
-
-Cook-Torrance BRDF在微表面上建模，但考虑的是单次光的反射，这种近似使得高粗糙度下存在能量损失，导致其表面的能量不守恒。
 ![](diagram_single_vs_multi_scatter.png)
 _单次反射光与多重散射_
 
