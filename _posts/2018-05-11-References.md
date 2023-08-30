@@ -16,6 +16,7 @@ tags: [Memo, Reference]
   	* https://darkcatgame.tistory.com/28
   	* https://www.4gamer.net/games/467/G046741/20210826001/
   	* https://www.kodeco.com/100-unreal-engine-4-paint-filter-tutorial#toc-anchor-002
+    * https://medium.com/@lordned/unreal-engine-4-rendering-part-2-shaders-and-vertex-data-80317e1ae5f3
  - Texture
     * https://gameinstitute.qq.com/community/detail/101476
     * https://www.gamedevelopment.blog/texture-filter/
@@ -37,6 +38,7 @@ tags: [Memo, Reference]
   	* https://fgiesen.wordpress.com/2011/07/09/a-trip-through-the-graphics-pipeline-2011-index/
     * https://mynameismjp.wordpress.com/2012/10/24/msaa-overview/
     * http://aicdg.com/aa/
+    * https://therealmjp.github.io/posts/shader-permutations-part1/
 
 ### Engine
   - Framework
