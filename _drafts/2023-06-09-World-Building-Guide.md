@@ -371,6 +371,12 @@ Data layer允许在运行时/编辑时限定数据加载的条件。Actor和Worl
 WorldPartition HLOD与原先UE4.x中的HLOD不同在于，WorldPartition HLOD不是和单独的关卡相关联的，而是由Grid生成的。初此之外与原先的HLOD概念基本类似，都是Actor聚合所生成的低模代理。
 
 ### 实践
+#### 预先定义HLOD的类型和层级
+在概念阶段定义拥有最好的视觉效果的HLOD的streaming、层级和类型，可以从运行平台、运行平台的内存和性能、Instancing、Nanite、场景密度、场景尺寸、WP的Grid大小、资产类型等方面出发考虑HLOD的优化。
 
+#### 在合适的距离评估HLOD
+如果使用Merged或Simplified类型，近距离的HLOD会显得非常潦草，因为HLOD被设计为用作远距离时的低模代理。启用Nanite的Instance层会获得不错的效果。
 
-###
+#### HLOD层
+
+#### 及时更新
