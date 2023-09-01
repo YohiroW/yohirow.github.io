@@ -89,6 +89,7 @@ tags: [Memo, Reference]
     * https://jashking.github.io/2018/04/20/ue4-filesystem/
     * Automation https://www.slideshare.net/EpicGamesJapan/ue4-137253042
     * https://www.slideshare.net/EpicGamesJapan/ue4-137253042
+
 ### Optimization
   - https://80.lv/articles/bird-house-working-on-a-stylized-landscape-in-ue4
   - https://www.famitsu.com/news/201910/16184681.html
@@ -120,6 +121,9 @@ tags: [Memo, Reference]
  - https://www.slideshare.net/EpicGamesJapan/ue4input-latency
  - https://ue5study.com/
  - http://kagring.blog.fc2.com/blog-category-13.html
+
+### Programming
+ - https://stackoverflow.com/questions/81656/where-do-i-find-the-current-c-or-c-standard-documents
 
 ### Animation
 - Vertex Animation
