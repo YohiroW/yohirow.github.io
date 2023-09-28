@@ -464,9 +464,9 @@ _从上到下：不同的金属度、不同电介质粗糙度、不同的金属�
 
 上述的类型以及范围是对Shader而言的，在参数到达Shader之前可以用*sRGB*表示，在传入Shader前转换到*linear space*即可。
 
-### 再映射
+### 重映射
 
-为了使美术同学更直观地使用标准材质模型，因此引入了对*baseColor*、*roughness*、*reflectance*的再映射。
+为了使美术同学更直观地使用标准材质模型，因此引入了对*baseColor*、*roughness*、*reflectance*的重映射。
 
 #### BaseColor
 
@@ -484,11 +484,11 @@ vec3 diffuseColor = (1.0 - metallic) * baseColor.rgb;
 $\alpha = perceptualRoughness^2 $ 
 
 ![](material_roughness_remap.png)
-_感知线性粗糙度(PerceptualRoughness，上)和再映射的粗糙度（$\alpha$，下）_
+_感知线性粗糙度(PerceptualRoughness，上)和重映射的粗糙度（$\alpha$，下）_
 
-可见，再映射的粗糙度更方便美术同学理解。若不经重映射, 光滑金属表面的值必须限制在0.0到0.05之间的小范围内。
+可见，重映射的粗糙度更方便美术同学理解。若不经重映射, 光滑金属表面的值必须限制在0.0到0.05之间的小范围内。
 
-经过简单的平方，再映射的粗糙度给出的结果在视觉上很直观, 对于实时渲染来说也很友好。
+经过简单的平方，重映射的粗糙度给出的结果在视觉上很直观, 对于实时渲染来说也很友好。
 
 
 #### Reflectance
