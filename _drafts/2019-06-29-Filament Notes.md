@@ -1,5 +1,5 @@
 ---
-title: Filament笔记
+title: Filament 笔记
 author: Yohiro
 date: 2019-06-29
 categories: [Rendering, graphics]
@@ -8,64 +8,65 @@ math: true
 img_path: /assets/images/Filament/
 ---
 
-大概是[**Filament**](https://google.github.io/filament/Filament.html)的笔记，以及部分自己的理解。
+大概是 [**Filament**](https://google.github.io/filament/Filament.html) 的笔记，以及部分自己的理解。
 
-可以结合Desktop的渲染方式一起，看Filament的渲染为了更好地支持移动端，舍弃了哪些。
+可以结合 Desktop 的渲染方式一起，看 Filament 的渲染为了更好地支持移动端，舍弃了哪些。
 
-也可以搭配[【GAMES101-现代计算机图形学入门-闫令琪】 ](https://www.bilibili.com/video/BV1X7411F744/?share_source=copy_web&vd_source=7a4dacf2c6974d860175d6d297f6d566)食用，风味更佳。
+也可以搭配 [【GAMES101-现代计算机图形学入门-闫令琪】](https://www.bilibili.com/video/BV1X7411F744/?share_source=copy_web&vd_source=7a4dacf2c6974d860175d6d297f6d566) 食用，风味更佳。
 
-# 原则
+## 原则
 
-Filament是用于Android的渲染引擎，设计原则包含以下几个方面：
-- 性能，关注实时渲染中移动设备的性能表现，主要目标为OpenGL ES3.x版本的GPU
-- 质量，同时兼顾中低性能的GPU
+Filament 是用于 Android 的渲染引擎，设计原则包含以下几个方面：
+- 性能，关注实时渲染中移动设备的性能表现，主要目标为 OpenGL ES3.x 版本的 GPU
+- 质量，同时兼顾中低性能的 GPU
 - 易用，方便美术同学直观且快速地迭代资产，因此提供易理解地参数以及物理上合理的视觉效果
 - 熟悉，该系统应尽可能使用物理单位，如以开尔文为单位地色温、以流明为单位的光照等
 - 灵活，支持非真实感渲染
 
-# PBR
+## PBR
 
-选择采用PBR是因为它从艺术和生产效率的角度来看有好处，而且它能很好的兼容设计目标。
+选择采用 PBR 是因为它从艺术和生产效率的角度来看有好处，而且它能很好的兼容设计目标。
 
-与传统模型相比，PBR是一种可以更准确地表示材质及其与光的交互方式的方法。PBR方法的核心是`材质和光照的分离`，可以创建在统一光照条件下看起来可信的资产。
+与传统模型相比，PBR 是一种可以更准确地表示材质及其与光的交互方式的方法。PBR 方法的核心是`材质和光照的分离`，可以创建在统一光照条件下看起来可信的资产。
 
-# 概念
+## 概念
 
-| 符号             | 定义            | 
+| 符号             | 定义            |
 |:----------------|:----------------|
-| $v$             | 观察视角的单位向量 | 
+| $v$             | 观察视角的单位向量 |
 | $l$             | 入射光线的单位向量 |
 | $n$             | 表面法线的单位向量 |
 | $h$             | 单位半角向量      |
 | $f$             | BRDF            |
-| $f_d$           | BRDF的漫反射项    |
-| $f_r$           | BRDF的镜面反射项  |
+| $f_d$           | BRDF 的漫反射项    |
+| $f_r$           | BRDF 的镜面反射项  |
 | $\alpha$        | 粗糙度           |
 | $\sigma$        | 漫反射率         |
 | $\Omega$        | 球体区域         |
 | $f_0$           | 入射法向的反射率  |
 | $f_{90}$        | 掠射角的反射率    |
-| $\chi^+(a)$     | 阶跃函数（a>0则为1，否则为0） |
+| $\chi^+(a)$     | 阶跃函数（a>0 则为 1，否则为 0） |
 | $n_{ior}$       | 界面折射率（IOR，Index of refraction） |
-| $\left< n \cdot l \right>$  | [0, 1]的点积 |
-| $\left< a \right>$  | [0, 1]的值 |
+| $\left< n \cdot l \right>$  | [0, 1] 的点积 |
+| $\left< a \right>$  | [0, 1] 的值 |
 
-# 材质系统
+## 材质系统
 
-> 详见👉[**Filament材质指南**](https://google.github.io/filament/Materials.html)以及[**材质属性**](https://google.github.io/filament/Material%20Properties.pdf)
+> 详见👉[**Filament 材质指南**](https://google.github.io/filament/Materials.html) 以及 [**材质属性**](https://google.github.io/filament/Material%20Properties.pdf)
 {: .prompt-info }
 
-## 标准模型
+### 标准模型
 
-标准的材质模型通过BSDF（双向散射分布函数）来表达，BSDF有两个组成部分BRDF（双向反射分布函数）以及BTDF（双向透射函数）。
-由于绝大多数材质对表面材质进行模拟，因而具有各项同性的标准材质模型会专注于BRDF，从而忽略或近似BTDF。
+标准的材质模型通过 BSDF（双向散射分布函数）来表达，BSDF 有两个组成部分 BRDF（双向反射分布函数）以及 BTDF（双向透射函数）。
+由于绝大多数材质对表面材质进行模拟，因而具有各项同性的标准材质模型会专注于 BRDF，从而忽略或近似 BTDF。
 
-BRDF将标准材质的表面分为:
+BRDF 将标准材质的表面分为：
+
 - 漫反射项 $f_d$
 - 镜面反射项 $f_r$  
 
-![](diagram_fr_fd.png)
-_BRDF模型中的$f_d$和$f_r$_
+![fr_fd](diagram_fr_fd.png)
+_BRDF 模型中的$f_d$和$f_r$_
 
 完整的表达为：
 
@@ -73,18 +74,18 @@ $$f(v,l)=f_d(v,l)+f_r(v,l)$$
 
 上述方程描述的是单一入射光，完整的渲染方程中将会对整个半球面上的入射光线 $l$ 进行积分。
 
-通常，材质表面并非是完全光滑的，因此引入了微表面模型/微表面BRDF
-![](diagram_microfacet.png)
+通常，材质表面并非是完全光滑的，因此引入了微表面模型/微表面 BRDF
+![microfacet](diagram_microfacet.png)
 _微表面模型的粗糙表面和光滑表面_
 
-在微表面，法线N位于入射光和观察方向之间的半角方向时会反射可见光。
+在微表面，法线 N 位于入射光和观察方向之间的半角方向时会反射可见光。
 ![microsurface](diagram_macrosurface.png){: .w-50 }
 
-但是也并非所有符合上面条件的法线会贡献反射，因为微表面BRDF会考虑材质表面的遮蔽而产生的自阴影。
+但是也并非所有符合上面条件的法线会贡献反射，因为微表面 BRDF 会考虑材质表面的遮蔽而产生的自阴影。
 ![shadow masking](diagram_shadowing_masking.png){: .w-50 }
 
 粗糙度高的材质，表面朝向相机的面越少，表现为越模糊，因为入射光的能量被分散了。
-![](diagram_roughness.png)
+![roughness](diagram_roughness.png)
 _光照对不同粗糙度的影响，从左到右表面逐渐光滑_
 
 下面的方程描述了微表面模型：
@@ -94,15 +95,15 @@ f_x(v,l) = \frac{1}{|n \cdot v| |n \cdot l|}
 \int_\Omega D(m,\alpha) G(v,l,m) f_m(v,l,m) (v \cdot m) (l \cdot m) dm
 \end{equation}$$
 
-其中D项描述微表面的法线分布，G项对微表面的几何性质（主要是阴影和遮蔽）进行描述。主要的不同来自于对半球微表面的积分$f_m$：
+其中 D 项描述微表面的法线分布，G 项对微表面的几何性质（主要是阴影和遮蔽）进行描述。主要的不同来自于对半球微表面的积分$f_m$：
 ![](diagram_micro_vs_macro.png)
 _宏观层面的平面（左）和微观层面的微表面（右）_
 在微观层面上，材质的表面并非完全平坦，就`无法再假设所有的入射光是平行的`，因此需要对半球进行积分，但对半球的完整的积分在实时渲染中不切实际，因此需要采用近似值。
 
-## 电介质和导体
-Filament里对材质属性引入了两个概念：电介质和导体。
+### 电介质和导体
+Filament 里对材质属性引入了两个概念：电介质和导体。
 
-入射光照射到BRDF模拟的材质表面后，光被分解为漫反射和镜面反射两个分量，这是一种简化的模型。
+入射光照射到 BRDF 模拟的材质表面后，光被分解为漫反射和镜面反射两个分量，这是一种简化的模型。
 
 实际上，会有入射光穿透表面，在材质内部进行散射，最后再以漫反射的形式离开表面：
 ![](diagram_scattering.png){: .w-75 }
@@ -111,42 +112,42 @@ _漫反射的散射_
 这就是电介质和导体的区别。导体不会产生次表面散射，散射发生在电介质当中。
 
 ![](diagram_brdf_dielectric_conductor.png){: .w-75 }
-_电介质和导体表面的BRDF模型_
+_电介质和导体表面的 BRDF 模型_
 
-## Specular BRDF
+### Specular BRDF
 
-在Cook-Torrance的微表面模型中，Specular BRDF可描述为，
+在 Cook-Torrance 的微表面模型中，Specular BRDF 可描述为，
 
 $$\begin{equation}
 f_r(v,l) = \frac{D(h, \alpha) G(v, l, \alpha) F(v, h, f0)}{4 (n \cdot v)(n \cdot l)}
 \end{equation}$$
 
-在实时渲染领域常采用对D、G、F项的近似，[**这里**](http://graphicrants.blogspot.com/2013/08/specular-brdf-reference.html)提供了更多关于Specular BRDF的参考。
+在实时渲染领域常采用对 D、G、F 项的近似，[**这里**](http://graphicrants.blogspot.com/2013/08/specular-brdf-reference.html) 提供了更多关于 Specular BRDF 的参考。
 
-### D 正态分布函数(Normal Distribution Function)
+#### D 正态分布函数 (Normal Distribution Function)
 
-正态分布函数（NDF）是描述现实世界物体表面分布的一种方式，但在实时渲染领域常用的是Walter描述的GGX分布，GGX具有长衰减和短峰值的特点，GGX的分布函数如下：
+正态分布函数（NDF）是描述现实世界物体表面分布的一种方式，但在实时渲染领域常用的是 Walter 描述的 GGX 分布，GGX 具有长衰减和短峰值的特点，GGX 的分布函数如下：
 
 $$\begin{equation}
 D_{GGX}(h,\alpha) = \frac{\alpha^2}{\pi ( (n \cdot h)^2 (\alpha^2 - 1) + 1)^2}
 \end{equation}$$
 
+下面是来自 UnrealEngine 中的实现，其中 a2 是$\alpha^2$
 
-下面是来自UnrealEngine中的实现，其中a2是$\alpha^2$
 ```hlsl
 // GGX / Trowbridge-Reitz
 // [Walter et al. 2007, "Microfacet models for refraction through rough surfaces"]
 float D_GGX( float a2, float NoH )
 {
-    float d = ( NoH * a2 - NoH ) * NoH + 1;	// 2 mad
-    return a2 / ( PI*d*d );					// 4 mul, 1 rcp
+    float d = ( NoH * a2 - NoH ) * NoH + 1; // 2 mad
+    return a2 / ( PI*d*d );             // 4 mul, 1 rcp
 }
 ```
 
 一个常见的优化手段是使用半精度的浮点数，即`half`类型进行计算。因为公式展开中的$1-(n \cdot h)^2$项存在`精度问题`：
 
-- 高光情况下，即当$(n \cdot h)^2$接近1时，该项会因为浮点数的差值计算问题被截断，导致结果为零。
-- $n \cdot h$本身在接近1时缺少足够的精度。
+- 高光情况下，即当$(n \cdot h)^2$接近 1 时，该项会因为浮点数的差值计算问题被截断，导致结果为零。
+- $n \cdot h$本身在接近 1 时缺少足够的精度。
 
 为避免精度造成的问题，可以用叉积的展开式代换，
 
@@ -154,7 +155,8 @@ $$\begin{equation}
 | a \times b |^2 = |a|^2 |b|^2 - (a \cdot b)^2
 \end{equation}$$
 
-由于$n$和$l$是单位向量，便有 $|n \times h|^2 = 1 - (n \cdot h)^2$ 。这样一来，我们便可以直接使用叉积来直接计算$1-(n \cdot h)^2$，Filament中的实现如下
+由于$n$和$l$是单位向量，便有 $|n \times h|^2 = 1 - (n \cdot h)^2$ 。这样一来，我们便可以直接使用叉积来直接计算$1-(n \cdot h)^2$，Filament 中的实现如下
+
 ```glsl
 #define MEDIUMP_FLT_MAX    65504.0
 #define saturateMediump(x) min(x, MEDIUMP_FLT_MAX)
@@ -168,15 +170,15 @@ float D_GGX(float roughness, float NoH, const vec3 n, const vec3 h) {
 }
 ```
 
-### G 几何阴影（Geometric Shadowing）
+#### G 几何阴影（Geometric Shadowing）
 
-根据*Heitz 2014, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"*，常用的Smith几何阴影公式如下： 
+根据* Heitz 2014, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"*，使用的 Smith 几何阴影公式如下：
 
 $$\begin{equation}
 G(v,l,\alpha) = G_1(l,\alpha) G_1(v,\alpha)
 \end{equation}$$
 
-其中$G_1$可使用多种模型，实时渲染中常使用GGX公式，
+其中$G_1$可使用多种模型，实时渲染中常使用 GGX 公式，
 
 $$\begin{equation}
 G_1(v,\alpha) = G_{GGX}(v,\alpha) = \frac{2 (n \cdot v)}{n \cdot v + \sqrt{\alpha^2 + (1 - \alpha^2) (n \cdot v)^2}}
@@ -188,17 +190,17 @@ $$\begin{equation}
 G(v,l,\alpha) = \frac{2 (n \cdot l)}{n \cdot l + \sqrt{\alpha^2 + (1 - \alpha^2) (n \cdot l)^2}} \frac{2 (n \cdot v)}{n \cdot v + \sqrt{\alpha^2 + (1 - \alpha^2) (n \cdot v)^2}}
 \end{equation}$$
 
-注意到$G(v,l,\alpha)$的分子为$4(n \cdot l) (n \cdot v)$这里再贴一次我们所使用的specular BRDF，
+注意到$G(v,l,\alpha)$的分子为$4(n \cdot l) (n \cdot v)$这里再贴一次我们所使用的 specular BRDF，
 
 $$\begin{equation}
 f_r(v,l) = \frac{D(h, \alpha) G(v, l, \alpha) F(v, h, f0)}{4 (n \cdot v)(n \cdot l)}
 \end{equation}$$
 
-通过引入可见性函数Visibility项$V(v,l,\alpha)$，将$f_r$变为：
+通过引入可见性函数 Visibility 项$V(v,l,\alpha)$，将$f_r$变为：
 
 $$\begin{equation}
 f_r(v,l) = D(h, \alpha) V(v, l, \alpha) F(v, h, f_0)
-\end{equation}$$   
+\end{equation}$$
 
 其中
 
@@ -212,7 +214,7 @@ $$\begin{equation}
 V_1(v,\alpha) = \frac{1}{n \cdot v + \sqrt{\alpha^2 + (1 - \alpha^2) (n \cdot v)^2}}
 \end{equation}$$
 
-论文指出，通过引入微表面的高度来建模可以得到更好的结果。引入了高度$h$的Smith函数：
+论文指出，通过引入微表面的高度来建模可以得到更好的结果。引入了高度$h$的 Smith 函数：
 
 $$\begin{equation}
 G(v,l,h,\alpha) = \frac{\chi^+(v \cdot h) \chi^+(l \cdot h)}{1 + \Lambda(v) + \Lambda(l)}
@@ -234,7 +236,8 @@ $$\begin{equation}
 V(v,l,\alpha) = \frac{0.5}{n \cdot l \sqrt{(n \cdot v)^2 (1 - \alpha^2) + \alpha^2} + n \cdot v \sqrt{(n \cdot l)^2 (1 - \alpha^2) + \alpha^2}}
 \end{equation}$$
 
-Unreal中的实现如下：
+Unreal 中的实现如下：
+
 ```hlsl
 // [Heitz 2014, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"]
 float Vis_SmithJoint(float a2, float NoV, float NoL) 
@@ -251,7 +254,7 @@ $$\begin{equation}
 V(v,l,\alpha) = \frac{0.5}{n \cdot l (n \cdot v (1 - \alpha) + \alpha) + n \cdot v (n \cdot l (1 - \alpha) + \alpha)}
 \end{equation}$$
 
-虽然在数学上是错的，但对于移动设备的实时渲染是足够的。Filament中的实现如下:
+虽然在数学上是错的，但对于移动设备的实时渲染是足够的。Filament 中的实现如下：
 
 ```glsl
 float V_SmithGGXCorrelatedFast(float NoV, float NoL, float roughness) {
@@ -262,23 +265,23 @@ float V_SmithGGXCorrelatedFast(float NoV, float NoL, float roughness) {
 }
 ```
 
-[Hammon17]提出了相似的优化思路，通过插值来实现：
+[Hammon17] 提出了相似的优化思路，通过插值来实现：
 
 $$\begin{equation}
 V(v,l,\alpha) = \frac{0.5}{lerp(2 (n \cdot l) (n \cdot v), (n \cdot l) + (n \cdot v), \alpha)}
 \end{equation}$$
 
-### F 菲涅尔（Fresnel）
-    
+#### F 菲涅尔（Fresnel）
+
 菲涅尔项定义了`光在两种不同介质的交界处如何处理反射和折射`，或者说`反射的能量与透射的能量的比率`。
 
-反射光的强度不仅取决于视角，还取决于材质的折射率IOR。将入射光线垂直于表面时（Normal）反射率记为$f_0$，掠射角（Grazing）反射率记为$f_{90}$。根据[Schlick94]描述，在Cook-Torrance的微表面模型中，Specular BRDF的菲涅尔项的一种近似可写为：
+反射光的强度不仅取决于视角，还取决于材质的折射率 IOR。将入射光线垂直于表面时（Normal）反射率记为$f_0$，掠射角（Grazing）反射率记为$f_{90}$。根据 [Schlick94] 描述，在 Cook-Torrance 的微表面模型中，Specular BRDF 的菲涅尔项的一种近似可写为：
 
 $$\begin{equation}
 F_{Schlick}(v,h,f_0,f_{90}) = f_0 + (f_{90} - f_0)(1 - v \cdot h)^5
 \end{equation}$$
 
-Unreal的实现如下：
+Unreal 的实现如下：
 
 ```hlsl
 float3 F_Schlick(float3 F0, float3 F90, float VoH)
@@ -288,18 +291,18 @@ float3 F_Schlick(float3 F0, float3 F90, float VoH)
 }
 ```
 
-该菲涅尔函数可当作入射反射率和掠射角反射率间的插值，可以取$f_{90}$为1.0来达到近似。
+该菲涅尔函数可当作入射反射率和掠射角反射率间的插值，可以取$f_{90}$为 1.0 来达到近似。
 
-## Diffuse BRDF
+### Diffuse BRDF
 
-漫反射中常用Lambertian函数，漫反射的BRDF：
+漫反射中常用 Lambertian 函数，漫反射的 BRDF：
 
 $$\begin{equation}
 f_d(v,l) = \frac{\sigma}{\pi} \frac{1}{| n \cdot v | | n \cdot l |}
 \int_\Omega D(m,\alpha) G(v,l,m) (v \cdot m) (l \cdot m) dm
 \end{equation}$$
 
-Filament中的实现，假定微表面半球面产生均一的漫反射，因此一个简单的Lambertian BRDF为
+Filament 中的实现，假定微表面半球面产生均一的漫反射，因此一个简单的 Lambertian BRDF 为
 
 $$\begin{equation}
 f_d(v,l) = \frac{\sigma}{\pi}
@@ -315,7 +318,7 @@ float Fd_Lambert() {
 vec3 Fd = diffuseColor * Fd_Lambert();
 ```
 
-迪士尼的BRDF和Oren-Nayar模型都考虑到了粗糙度的影响，并会在掠射角出产生细微的逆反射。迪士尼的Diffuse BRDF如下：
+迪士尼的 BRDF 和 Oren-Nayar 模型都考虑到了粗糙度的影响，并会在掠射角出产生细微的逆反射。迪士尼的 Diffuse BRDF 如下：
 
 $$\begin{equation}
 f_d(v,l) = \frac{\sigma}{\pi} F_{Schlick}(n,l,1, f_{90}) F_{Schlick}(n,v,1,f_{90})
@@ -327,45 +330,46 @@ $$\begin{equation}
 f_{90}=0.5 + 2 \cdot \alpha cos^2(\theta_d)
 \end{equation}$$
 
-Unreal中对这两种模型的Diffuse BRDF的实现：
+Unreal 中对这两种模型的 Diffuse BRDF 的实现：
 
 ```hlsl
 // [Burley 2012, "Physically-Based Shading at Disney"]
 float3 Diffuse_Burley( float3 DiffuseColor, float Roughness, float NoV, float NoL, float VoH )
 {
-	float FD90 = 0.5 + 2 * VoH * VoH * Roughness;
-	float FdV = 1 + (FD90 - 1) * Pow5( 1 - NoV );
-	float FdL = 1 + (FD90 - 1) * Pow5( 1 - NoL );
-	return DiffuseColor * ( (1 / PI) * FdV * FdL );
+    float FD90 = 0.5 + 2 * VoH * VoH * Roughness;
+    float FdV = 1 + (FD90 - 1) * Pow5( 1 - NoV );
+    float FdL = 1 + (FD90 - 1) * Pow5( 1 - NoL );
+    return DiffuseColor * ( (1 / PI) * FdV * FdL );
 }
 
 // [Gotanda 2012, "Beyond a Simple Physically Based Blinn-Phong Model in Real-Time"]
 float3 Diffuse_OrenNayar( float3 DiffuseColor, float Roughness, float NoV, float NoL, float VoH )
 {
-	float a = Roughness * Roughness;
-	float s = a;// / ( 1.29 + 0.5 * a );
-	float s2 = s * s;
-	float VoL = 2 * VoH * VoH - 1;		// double angle identity
-	float Cosri = VoL - NoV * NoL;
-	float C1 = 1 - 0.5 * s2 / (s2 + 0.33);
-	float C2 = 0.45 * s2 / (s2 + 0.09) * Cosri * ( Cosri >= 0 ? rcp( max( NoL, NoV ) ) : 1 );
-	return DiffuseColor / PI * ( C1 + C2 ) * ( 1 + Roughness * 0.5 );
+    float a = Roughness * Roughness;
+    float s = a;// / ( 1.29 + 0.5 * a );
+    float s2 = s * s;
+    float VoL = 2 * VoH * VoH - 1;      // double angle identity
+    float Cosri = VoL - NoV * NoL;
+    float C1 = 1 - 0.5 * s2 / (s2 + 0.33);
+    float C2 = 0.45 * s2 / (s2 + 0.09) * Cosri * ( Cosri >= 0 ? rcp( max( NoL, NoV ) ) : 1 );
+    return DiffuseColor / PI * ( C1 + C2 ) * ( 1 + Roughness * 0.5 );
 }
 ```
-Lambertian diffuse BRDF 和 Disney diffuse BRDF的效果对比。从最左侧边缘可以看出，Disney的模型在掠射角有细微的不同。
+
+Lambertian diffuse BRDF 和 Disney diffuse BRDF 的效果对比。从最左侧边缘可以看出，Disney 的模型在掠射角有细微的不同。
 
 ![](diagram_lambert_vs_disney.png)
 _Lambertian diffuse BRDF（左）和 Disney diffuse BRDF（右）_
 
-## 标准模型总结
+### 标准模型总结
 
 镜面反射项
-: Cook-Torrance镜面反射微表面模型/GGX正态分布函数/Smith-GGX高度相关可见性函数/Schlick Fresnel函数
+: Cook-Torrance 镜面反射微表面模型/GGX 正态分布函数/Smith-GGX 高度相关可见性函数/Schlick Fresnel 函数
 
 漫反射项
-: Lambert漫反射模型
+: Lambert 漫反射模型
 
-标准模型的GLSL实现：
+标准模型的 GLSL 实现：
 
 ```glsl
 float D_GGX(float NoH, float a) {
@@ -414,16 +418,15 @@ void BRDF(...) {
 }
 ```
 
+### 提升 BRDF
 
-## 提升BRDF
-
-一个好的BRDF函数是能量守恒的，上述探讨的BRDF存在两个问题。
+一个好的 BRDF 函数是能量守恒的，上述探讨的 BRDF 存在两个问题。
 
 漫反射获取的能量
-: Lambert模型的Diffuse BRDF没有考虑表面反射的光
+: Lambert 模型的 Diffuse BRDF 没有考虑表面反射的光
 
 镜面反射损失的能量
-: Cook-Torrance BRDF在微表面上建模，但考虑的是单次光的反射，这种近似使得高粗糙度下存在能量损失，导致其表面的能量不守恒。
+: Cook-Torrance BRDF 在微表面上建模，但考虑的是单次光的反射，这种近似使得高粗糙度下存在能量损失，导致其表面的能量不守恒。
 
 ![](diagram_single_vs_multi_scatter.png)
 _单次反射光与多重散射_
@@ -435,42 +438,40 @@ _仅考虑了单次散射的金属材质_
 ![](material_metallic_energy_preservation.png)
 _考虑了多重散射的金属材质_
 
-## 参数化
+### 参数化
 
-[**迪士尼的材质模型**](https://media.disneyanimation.com/uploads/production/publication_asset/48/asset/s2012_pbs_disney_brdf_notes_v3.pdf)包含*baseColor*、*subsurface*、*metallic*、*specular*、*specularTint*、*roughness*、*anisotropic*、*sheen*、*sheenTint*、*clearcoat*、*clearcoatGloss*共11项，考虑到实时渲染的性能要求以及方便美术同学和开发同学使用，因此，Filament使用了简化模型。
+[**迪士尼的材质模型**](https://media.disneyanimation.com/uploads/production/publication_asset/48/asset/s2012_pbs_disney_brdf_notes_v3.pdf) 包含* baseColor*、*subsurface*、*metallic*、*specular*、*specularTint*、*roughness*、*anisotropic*、*sheen*、*sheenTint*、*clearcoat*、*clearcoatGloss *共 11 项，考虑到实时渲染的性能要求以及方便美术同学和开发同学使用，因此，Filament 使用了简化模型。
 
-### 参数及类型
-
-| 参数              | 定义            | 
+| 参数              | 定义            |
 |:---------------- |:----------------|
-| BaseColor        | 非金属材质表面的漫反射[反照率](https://zh.wikipedia.org/wiki/反照率)和金属材质表面的镜面颜色 | 
+| BaseColor        | 非金属材质表面的漫反射 [反照率](https://zh.wikipedia.org/wiki/反照率)和金属材质表面的镜面颜色 | 
 | Metallic         | 表面是电介质（0.0）或导体（1.0） |
 | Roughness        | 表面的粗糙度 |
 | Reflectance      | 电介质表面法向入射$f_0$时的菲涅耳反射率 |
-| Emissive         | 模拟自发光表面额外的漫反射反照率，常见于具有泛光效果的HDR管线中 |
+| Emissive         | 模拟自发光表面额外的漫反射反照率，常见于具有泛光效果的 HDR 管线中 |
 | Ambient Occlusion| 定义材质表面某点半球面上接收的环境光量，是每像素阴影系数 |
 
 ![](material_parameters.png)
 _从上到下：不同的金属度、不同电介质粗糙度、不同的金属粗糙度、不同的反射率_
 
-| 参数              | 类型和范围       | 
+| 参数              | 类型和范围       |
 |:---------------- |:----------------|
-| BaseColor        | [0,1]的Linear RGB | 
-| Metallic         | [0,1]的标量 |
-| Roughness        | [0,1]的标量 |
-| Reflectance      | [0,1]的标量 |
-| Emissive         | [0,1]的Linear RGB + 曝光补偿 |
-| Ambient Occlusion| [0,1]的标量 |
+| BaseColor        | [0,1] 的 Linear RGB |
+| Metallic         | [0,1] 的标量 |
+| Roughness        | [0,1] 的标量 |
+| Reflectance      | [0,1] 的标量 |
+| Emissive         | [0,1] 的 Linear RGB + 曝光补偿 |
+| Ambient Occlusion| [0,1] 的标量 |
 
-上述的类型以及范围是对Shader而言的，在参数到达Shader之前可以用*sRGB*表示，在传入Shader前转换到*linear space*即可。
+上述的类型以及范围是对 Shader 而言的，在参数到达 Shader 之前可以用* sRGB *表示，在传入 Shader 前转换到* linear space *即可。
 
 ### 重映射
 
-为了使美术同学更直观地使用标准材质模型，因此引入了对*baseColor*、*roughness*、*reflectance*的重映射。
+为了使美术同学更直观地使用标准材质模型，因此引入了对* baseColor*、*roughness*、*reflectance *的重映射。
 
 #### BaseColor
 
-材质的baseColor会受其`金属程度`影响。电介质材质具有单一颜色的镜面反射，但会保留baseColor作为漫反射颜色。而导体材质使用baseColor作为镜面反射的颜色，没有漫反射。
+材质的 baseColor 会受其`金属程度`影响。电介质材质具有单一颜色的镜面反射，但会保留 baseColor 作为漫反射颜色。而导体材质使用 baseColor 作为镜面反射的颜色，没有漫反射。
 
 因此，对于漫反射的颜色，有以下转换：
 
@@ -479,47 +480,46 @@ vec3 diffuseColor = (1.0 - metallic) * baseColor.rgb;
 ```
 #### Roughness
 
-在Filament中，使用者所指定的粗糙度叫做`perceptualRoughness`是一种直观的、经验性的值，这种粗糙度会使用下面公式映射到线性空间，
+在 Filament 中，使用者所指定的粗糙度叫做`perceptualRoughness`是一种直观的、经验性的值，这种粗糙度会使用下面公式映射到线性空间，
 
 $\alpha = perceptualRoughness^2 $ 
 
 ![](material_roughness_remap.png)
-_感知线性粗糙度(PerceptualRoughness，上)和重映射的粗糙度（$\alpha$，下）_
+_感知线性粗糙度 (PerceptualRoughness，上）和重映射的粗糙度（$\alpha$，下）_
 
-可见，重映射的粗糙度更方便美术同学理解。若不经重映射, 光滑金属表面的值必须限制在0.0到0.05之间的小范围内。
+可见，重映射的粗糙度更方便美术同学理解。若不经重映射，光滑金属表面的值必须限制在 0.0 到 0.05 之间的小范围内。
 
-经过简单的平方，重映射的粗糙度给出的结果在视觉上很直观, 对于实时渲染来说也很友好。
-
+经过简单的平方，重映射的粗糙度给出的结果在视觉上很直观，对于实时渲染来说也很友好。
 
 #### Reflectance
 
-## 透明涂层模型
+### 透明涂层模型
 
-## 各向异性模型
+### 各向异性模型
 
-## 次表面散射模型
+### 次表面散射模型
 
-## 布料模型
+### 布料模型
 
-# 光照
+## 光照
 
-## 单位
+### 单位
 
-## 直接光照
+### 直接光照
 
-## IBL
+### IBL
 
-## 静态光照
+### 静态光照
 
-## 遮挡
+### 遮挡
 
-## 法线贴图
+### 法线贴图
 
-# 体积效果
+## 体积效果
 
-# 反走样
+## 反走样
 
-# 图像管线
+## 图像管线
 
 ## 基于现实的相机
 
@@ -527,6 +527,6 @@ _感知线性粗糙度(PerceptualRoughness，上)和重映射的粗糙度（$\al
 
 ## 坐标系
 
-# 附件
+## 附件
 
 - [physically-based-shading-on-mobile](https://www.unrealengine.com/en/blog/physically-based-shading-on-mobile)
