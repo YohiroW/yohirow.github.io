@@ -144,9 +144,9 @@ float D_GGX( float a2, float NoH )
 }
 ```
 
-一个常见的优化手段是使用半精度的浮点数，即`half`类型进行计算。因为公式展开中的$1-(n \cdot h)^2$项存在`精度问题`：
+一个常见的优化手段是使用半精度的浮点数，即`half`类型进行计算。因为公式展开中的 $1-(n \cdot h)^2$ 项存在`精度问题`：
 
-- 高光情况下，即当$(n \cdot h)^2$接近 1 时，该项会因为浮点数的差值计算问题被截断，导致结果为零。
+- 高光情况下，即当 $(n \cdot h)^2$ 接近 1 时，该项会因为浮点数的差值计算问题被截断，导致结果为零。
 - $n \cdot h$本身在接近 1 时缺少足够的精度。
 
 为避免精度造成的问题，可以用叉积的展开式代换，
@@ -155,7 +155,15 @@ $$\begin{equation}
 | a \times b |^2 = |a|^2 |b|^2 - (a \cdot b)^2
 \end{equation}$$
 
-由于$n$和$l$是单位向量，便有 $|n \times h|^2 = 1 - (n \cdot h)^2$ 。这样一来，我们便可以直接使用叉积来直接计算$1-(n \cdot h)^2$，Filament 中的实现如下
+由于 $n$ 和 $l$ 是单位向量，便有
+
+$$\begin{equation}
+|n \times h|^2 = 1 - (n \cdot h)^2
+\end{equation}$$
+
+这样一来，我们便可以直接使用叉积来直接计算 $1-(n \cdot h)^2$
+
+Filament 中的实现如下
 
 ```glsl
 #define MEDIUMP_FLT_MAX    65504.0
@@ -178,7 +186,7 @@ $$\begin{equation}
 G(v,l,\alpha) = G_1(l,\alpha) G_1(v,\alpha)
 \end{equation}$$
 
-其中$G_1$可使用多种模型，实时渲染中常使用 GGX 公式，
+其中 $G_1$ 可使用多种模型，实时渲染中常使用 GGX 公式，
 
 $$\begin{equation}
 G_1(v,\alpha) = G_{GGX}(v,\alpha) = \frac{2 (n \cdot v)}{n \cdot v + \sqrt{\alpha^2 + (1 - \alpha^2) (n \cdot v)^2}}
@@ -190,13 +198,13 @@ $$\begin{equation}
 G(v,l,\alpha) = \frac{2 (n \cdot l)}{n \cdot l + \sqrt{\alpha^2 + (1 - \alpha^2) (n \cdot l)^2}} \frac{2 (n \cdot v)}{n \cdot v + \sqrt{\alpha^2 + (1 - \alpha^2) (n \cdot v)^2}}
 \end{equation}$$
 
-注意到$G(v,l,\alpha)$的分子为$4(n \cdot l) (n \cdot v)$这里再贴一次我们所使用的 specular BRDF，
+注意到 $G(v,l,\alpha)$ 的分子为 $4(n \cdot l) (n \cdot v)$ 这里再贴一次我们所使用的 specular BRDF，
 
 $$\begin{equation}
 f_r(v,l) = \frac{D(h, \alpha) G(v, l, \alpha) F(v, h, f0)}{4 (n \cdot v)(n \cdot l)}
 \end{equation}$$
 
-通过引入可见性函数 Visibility 项$V(v,l,\alpha)$，将$f_r$变为：
+通过引入可见性函数 Visibility 项 $V(v,l,\alpha)$，将 $f_r$ 变为：
 
 $$\begin{equation}
 f_r(v,l) = D(h, \alpha) V(v, l, \alpha) F(v, h, f_0)
@@ -478,6 +486,7 @@ _从上到下：不同的金属度、不同电介质粗糙度、不同的金属�
 ```glsl
 vec3 diffuseColor = (1.0 - metallic) * baseColor.rgb;
 ```
+
 #### Roughness
 
 在 Filament 中，使用者所指定的粗糙度叫做`perceptualRoughness`是一种直观的、经验性的值，这种粗糙度会使用下面公式映射到线性空间，
