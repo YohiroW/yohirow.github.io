@@ -104,6 +104,3 @@ pose_wrangler = main.PoseWrangler()
 - 需确保 Maya 中的各节点没有使用命名空间
 - 需确保骨骼和 Mesh 的原点都位于（0，0，0）
 - 创建的 Pose 时, 默认的 TPose 需更名为 `default`
-
-## 参考内容
-
