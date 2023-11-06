@@ -8,7 +8,7 @@ render_with_liquid: false
 img_path: /assets/images/{}/
 ---
 
-这篇文章将从`World Partition`，`One File Per Actor(OFPA)`，`Level Instances 和 Packed Level Actors(PLA)`，`Data Layers`，`HLOD，Editor 和 UX`，`WP 之外的数据流送`，这些方面讲一讲 Unreal 5.x 版本中的世界构建系统。相较于 4.x 时期的 Level streaming，5.x 版本更倾向于将数据流送的粒度进一步细化，原先基于**关卡**的流送细化为基于** Actor **的流送。
+这篇文章将从`World Partition`，`One File Per Actor(OFPA)`，`Level Instances 和 Packed Level Actors(PLA)`，`Data Layers`，`HLOD，Editor 和 UX`，`WP 之外的数据流送`，这些方面讲一讲 Unreal 5.x 版本中的世界构建系统。相较于 4.x 时期的 Level streaming，5.x 版本更倾向于将数据流送的粒度进一步细化，原先基于**关卡**的流送细化为基于 ** Actor** 的流送。
 
 ## [**World Partition**](https://docs.unrealengine.com/5.1/en-US/world-partition-in-unreal-engine/)
 
@@ -38,11 +38,11 @@ class ENGINE_API APlayerController : public AController,
 #### 创建许多新 Grid 以及运行时的 Data Layer
 
 - 每个 Grid 的每一个小格子都至少包含一个 Actor，产生一个 StreamingLevel。此外，每个 Data Layer 也会创建一个 StreamingLevel。任何行为产生的 StreamingLevel 都会对性能有所影响，例如：
-    - 根据资产类型创建多个 Grid 或 Data Layer，像是在一个森林的场景中创建树木的 Grid、FX 的 Grid、灯光的 Grid、大石头小石头的。
-    - 仅使用 Data Layer 用作编辑目的而不在运行时改变其状态。
+        - 根据资产类型创建多个 Grid 或 Data Layer，像是在一个森林的场景中创建树木的 Grid、FX 的 Grid、灯光的 Grid、大石头小石头的。
+        - 仅使用 Data Layer 用作编辑目的而不在运行时改变其状态。
 
 - 需要平衡 Grid/Data Layer 的规模和 Streaming 的效率
-    - 通常为一些特殊内容添加 Grid/Data Layer 的行为，不会造成太大的性能影响，可以放心使用。
+        - 通常为一些特殊内容添加 Grid/Data Layer 的行为，不会造成太大的性能影响，可以放心使用。
 
 #### 场景/Data Layer 的组织
 
@@ -70,10 +70,10 @@ class ENGINE_API APlayerController : public AController,
 
 - 运行时无法创建/修改 grid，生成 streaming 的行为法中在 PIE 和 Cook 时。
 - 不支持运行时关卡的创建/注入行为
-    - 修改 Game Feature 插件可以往指定的关卡添加 Actor。
-    - 修改 Level Instance 的代码也是可行的。
-- Spawn 的 Actor 是位于 Persistent 关卡中的，子 Actor 的关卡位置取决于其父节点的加载关卡。
-- Persistent 关卡中的 Actor 引用其他 Spatially Loaded 的 Actor，引擎禁止该行为。
+        - 修改 Game Feature 插件可以往指定的关卡添加 Actor
+        - 修改 Level Instance 的代码也是可行的
+- Spawn 的 Actor 是位于 Persistent 关卡中的，子 Actor 的关卡位置取决于其父节点的加载关卡
+- Persistent 关卡中的 Actor 引用其他 Spatially Loaded 的 Actor，引擎禁止该行为
 
 #### GC
 
@@ -91,7 +91,7 @@ WP 与 OFPA 密不可分，因此需要考虑产生的额外的 actor 文件数�
 
 当前版本不支持，根据 [**Roadmap**](https://udn.unrealengine.com/s/article/World-Building-Features-Roadmap) 显示，将在 5.3 版本中添加该功能（Experimental），5.4plus 版本中可供产品使用。
 
-#### 光照 
+#### 光照
 
 仅支持动态光照，不允许烘培静态光。
 
@@ -105,25 +105,26 @@ WP 与 OFPA 密不可分，因此需要考虑产生的额外的 actor 文件数�
 |加载范围|`256m（加载距离随平台和性能等级改变）`|
 
 - 2 HLOD setup
-    - 建筑物的 HLOD（两层）
-        - HLOD 0 
-            为支持破坏功能，HLOD0 的 mesh 被合并。256m cell，加载范围 512m，spatially loaded
-        - HLOD 1
-            简化的 mesh，512m cell，2048m load range，spatially loaded
-    - 树木的 HLOD（一层）
-        - 使用 imposter 的 Instanced layer , always loaded
+        - 建筑物的 HLOD（两层）
+            - HLOD 0
+                为支持破坏功能，HLOD0 的 mesh 被合并。256m cell，加载范围 512m，spatially loaded
+            - HLOD 1
+                简化的 mesh，512m cell，2048m load range，spatially loaded
+        - 树木的 HLOD（一层）
+            - 使用 imposter 的 Instanced layer , always loaded
+
 - Level Instances:
-    - 所有的 POI
+        - 所有的 POI
 - Data layer：
-    - 4 个 初生岛屿和团队战大厅
-    - 1 个 用于赛季变换/特殊事件
+        - 4 个 初生岛屿和团队战大厅
+        - 1 个 用于赛季变换/特殊事件
 - 服务器端：
-    - 全部加载
-    - Server streaming 在 PIE 下使用，用于提升开发者的迭代效率
-- Landscape: 
-    - Always loaded
-- Packaed Level Actors: 
-    - 无
+        - 全部加载
+        - Server streaming 在 PIE 下使用，用于提升开发者的迭代效率
+- Landscape:
+        - Always loaded
+- Packaed Level Actors:
+        - 无
 
 #### 黑客帝国 demo
 
@@ -133,20 +134,20 @@ WP 与 OFPA 密不可分，因此需要考虑产生的额外的 actor 文件数�
 |加载范围|`128m`|
 
 - HLOD setup
-    - HLOD 0 
-        启用 Nanite 的 Instance layer，256m cell，加载范围 768m，spatially loaded
-    - HLOD 1
-        简化的 mesh，256m cell，always loaded
+        - HLOD 0
+            启用 Nanite 的 Instance layer，256m cell，加载范围 768m，spatially loaded
+        - HLOD 1
+            简化的 mesh，256m cell，always loaded
 - 使用 houdini 过程化构建，同时使用 Rule Processor 插件
-    - 所有的 POI
-- Packaed Level Actors: 
-    - PLA 和使用了 Instanced static mesh 过程化生成的 Actor
-    - 该做法应用于所有的建筑物、街道、小物件
+        - 所有的 POI
+- Packaed Level Actors:
+        - PLA 和使用了 Instanced static mesh 过程化生成的 Actor
+        - 该做法应用于所有的建筑物、街道、小物件
 - Data layer（运行时 35/ 编辑器 21）：
-    - 用于 cut scenee 和 gameplay
-    - 用于屋顶和路面下的资产
-- Landscape: 
-    - 无
+        - 用于 cut scenee 和 gameplay
+        - 用于屋顶和路面下的资产
+- Landscape:
+        - 无
 
 #### 古代山谷 demo
 
@@ -156,17 +157,17 @@ WP 与 OFPA 密不可分，因此需要考虑产生的额外的 actor 文件数�
 |加载范围|`64m`|
 
 - HLOD setup
-    - HLOD 0 
-       Instance layer，always loaded
-- Packaed Level Actors: 
-    - 用于组合岩石
+        - HLOD
+            Instance layer，always loaded
+- Packaed Level Actors:
+        - 用于组合岩石
 - Data layer（运行时 2/ 编辑器 1）
-- Landscape: 
-    - 无
+- Landscape:
+        - 无
 
 ### 调试
 
- - 常用 CVars
+- 常用 CVars
 
     更多的可以执行 DumpConsoleCommands，将所有命令 dump 出来，wp 相关的 debug 指令太多，下面仅列出一些常用的。
 
@@ -179,7 +180,7 @@ WP 与 OFPA 密不可分，因此需要考虑产生的额外的 actor 文件数�
 
 ## [**One File Per Actor**](https://docs.unrealengine.com/5.1/en-US/one-file-per-actor-in-unreal-engine/)
 
-One File Per Actor(OFPA) 
+One File Per Actor(OFPA)
 
 ### 实践
 
@@ -343,9 +344,9 @@ Data layer 允许在运行时/编辑时限定数据加载的条件。Actor 和 W
 - 管理任务、游戏进度、事件等各种特定的数据
 - HLOD 支持，创建的 HLOD 的状态会和 Data layer 的状态一同变化同时也是编辑器的 Data layer
 - 运行时具有三种状态：
-    - Unloaded（unloaded and not visible）
-    - Loaded（loaded and not visible）
-    - Activated（loaded and visible）
+        - Unloaded（unloaded and not visible）
+        - Loaded（loaded and not visible）
+        - Activated（loaded and visible）
 
 ### 编辑器 Data layer
 
@@ -354,11 +355,11 @@ Data layer 允许在运行时/编辑时限定数据加载的条件。Actor 和 W
 - 预览运行时 Data layer 的内容
 - 存在仅编辑器可见的 Data layer，在 Cook 版本和 PIE 中不可见
 - 编辑器 Data layer 的状态：
-    - IsInitiallyVisible（加载 world 时，是否默认可见）
-    - IsInitiallyLoaded（加载 world 时，是否默认加载）
-    - Loaded 
-    - Visible
-    
+        - IsInitiallyVisible（加载 world 时，是否默认可见）
+        - IsInitiallyLoaded（加载 world 时，是否默认加载）
+        - Loaded
+        - Visible
+
 ### 实践
 
 #### 使用仅编辑器可见的 Data layer 来分离数据
@@ -407,9 +408,9 @@ Data layer 允许在运行时/编辑时限定数据加载的条件。Actor 和 W
 
 - 35 个运行时 Data layer
 - 32 个编辑器 Data layer
-    - Sequence 以及 Gameplay 内容的 streaming 和卸载
-    - Sequence 特定的优化
-    - 多个仅编辑器的 Data layer 用于 PCG 生成
+        - Sequence 以及 Gameplay 内容的 streaming 和卸载
+        - Sequence 特定的优化
+        - 多个仅编辑器的 Data layer 用于 PCG 生成
 
 #### 古代山谷 demo
 

@@ -6,13 +6,6 @@ categories: [Programming]
 tags: [engine, programming, optimization, algorithm, unrealengine]
 img_path: /assets/images/LRU/
 ---
-
-## 更新日志
-
-2020-07-12 添加了UE4里的LRU实现的相关分析/页面格式整理
-
---- 
-
 **LRU**(**Least Recently Used**，即**最近最少使用**)，在操作系统原理课程中，讨论虚拟内存换页算法一节，曾对LRU有所涉及。实际运用中，LRU也是一种通用的缓存置换策略，所以这里想展开谈谈，并提供一个简易的实现。
 
 ## 概念
@@ -119,14 +112,6 @@ int main()
     return 0;
 }
 ```
-
-## 示例
-> 初始化时页面中均为空页
-{: .prompt-info }
-
-## 其他实现参考
-这里拿出UE4中的实现来看一下（为什么是UE4？因为恰好最近在用XD）
-
 
 ## 扩展阅读
 
