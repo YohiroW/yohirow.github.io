@@ -1,7 +1,7 @@
 ---
 title: 关于 Depth Buffer 的分布方式
 author: Yohiro
-date: 2019-05-17
+date: 2019-05-18
 categories: [Engine, Rendering, Optimization]
 tags: [engine, rendering, optimization, math, depth]
 render_with_liquid: false
@@ -19,7 +19,7 @@ img_path: /assets/images/ZRedistribution/
 - 轻微调整相机近平面的位置
 - ...
 
-屏幕空间中的 Z 值将会映射到深度 d 中，在 DirectX 环境下被映射到 [0.0, 1.0]，在 OpenGL 环境下被映射到 [-1.0, 1.0]，这就是我们所谓的 NDC 。也就是说，对于渲染 API 而言，他们期待
+屏幕空间中的 Z 值将会映射到深度 d 中，在 DirectX 环境下被映射到 [0.0, 1.0]，在 OpenGL 环境下被映射到 [-1.0, 1.0]，这就是我们所谓的 NDC。也就是说，对于渲染 API 而言，他们期待
 
 深度 depth_buffer_value 的值可以这样描述：
 
@@ -44,7 +44,7 @@ img_path: /assets/images/ZRedistribution/
 
 ![depth perception](depth-perception-graph1-b.jpg)
 
-上图使用了整数的 z ，可以看出 z 越远，d 的排布越稀疏，精度越低。
+上图使用了整数的 z，可以看出 z 越远，d 的排布越稀疏，精度越低。
 
 ![float depth perception](depth-precision-graph4-625x324.jpg)
 

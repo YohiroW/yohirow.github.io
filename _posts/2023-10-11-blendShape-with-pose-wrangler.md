@@ -1,7 +1,7 @@
 ---
 title: 使用 Pose Wrangler 创建 Blendshape
 author: Yohiro
-date: 2023-10-12
+date: 2023-10-11
 categories: [Animation, UnrealEngine]
 tags: [animation, blendshape, maya, deform]
 render_with_liquid: false
@@ -28,7 +28,7 @@ pose_wrangler = main.PoseWrangler()
 
 ### 创建解算器
 
-首先需要在 PoseWrangler 中根据骨骼创建 RBF 解算器，RBF 是指 *Radial Based Function* ，即*径向基函数*，在建模领域主要应用于肌肉、表情等形变方向。
+首先需要在 PoseWrangler 中根据骨骼创建 RBF 解算器，RBF 是指 *Radial Based Function*，即*径向基函数*，在建模领域主要应用于肌肉、表情等形变方向。
 
 1. 点击 <kbd>Create Solver</kbd> 以创建解算器，初次创建的解算器会自动进入编辑状态
 2. 如果没有进入编辑状态，点击 <kbd>Edit Solver</kbd> 以进入编辑状态（编辑完成需要手动点击 Finish Editing）
@@ -45,7 +45,7 @@ pose_wrangler = main.PoseWrangler()
 4. 调整完成后，点击 <kbd>Update Pose</kbd> 更新 Pose
 5. 修改 Pose 对应的名称
 
-**Note**: 在 Pose 列表为空时，添加驱动骨骼时将会创建名为 default 的默认 Pose，如果需要使用插件编辑 blendshape ，那么该 Pose 需予以保留。v1.0 版本中的默认 Pose 的命名 base_pose 在 v2.0 中将不支持。
+**Note**: 在 Pose 列表为空时，添加驱动骨骼时将会创建名为 default 的默认 Pose，如果需要使用插件编辑 blendshape，那么该 Pose 需予以保留。v1.0 版本中的默认 Pose 的命名 base_pose 在 v2.0 中将不支持。
 
 ### 创建 Blendshape
 
