@@ -2,7 +2,7 @@
 title: Pose Space Deformation
 author: Yohiro
 date: 2023-10-16
-categories: [Animation]
+categories: [Unreal, Animation]
 tags: [animation,deform,blendshape]
 render_with_liquid: false
 math: true
