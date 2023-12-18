@@ -30,6 +30,7 @@ tags: [Memo, References]
 * [UE4 Cel Shading : 카툰렌더링](https://darkcatgame.tistory.com/28)
 * [［CEDEC 2021］「BLUE PROTOCOL」のテクニカルディレクターが語る，UE4のアニメ表現。エンジン改造で実現したこだわりの実装とは](https://www.4gamer.net/games/467/G046741/20210826001/)
 * [Unreal Engine 4 Paint Filter](https://www.kodeco.com/100-unreal-engine-4-paint-filter-tutorial#toc-anchor-002)
+* [角色受多个点光源影响做法](http://walkingfat.com/%E3%80%8A%E5%A1%9E%E5%B0%94%E8%BE%BE-%E8%8D%92%E9%87%8E%E4%B9%8B%E6%81%AF%E3%80%8B%E4%B8%AD%E8%A7%92%E8%89%B2%E5%8F%97%E5%A4%9A%E4%B8%AA%E7%82%B9%E5%85%89%E6%BA%90%E5%BD%B1%E5%93%8D%E5%81%9A%E6%B3%95/)
 
 * [Unreal Engine 4 Rendering Part 2: Shaders and Vertex Data](https://medium.com/@lordned/unreal-engine-4-rendering-part-2-shaders-and-vertex-data-80317e1ae5f3)
 
@@ -45,7 +46,7 @@ tags: [Memo, References]
 * [Ocean Rendering with Fast Fourier Transform](https://arm-software.github.io/opengl-es-sdk-for-android/ocean_f_f_t.html)
 * [Making an 8-bit NES game (Part 1): A minimal ROM](http://www.betelge.com/blog/)
 
-### Other
+### 其他
 
 * [Custom Per Object Shadowmaps using Blueprints](https://shaderbits.com/blog/custom-per-object-shadowmaps-using-blueprints)
 * [Detailed render flow](https://ikrima.dev/ue4guide/graphics-development/render-architecture/detailed-render-flow/)
@@ -55,15 +56,16 @@ tags: [Memo, References]
 * [filament](https://github.com/google/filament)
 * [Graphics Studies Compilation](https://www.adriancourreges.com/blog/2020/12/29/graphics-studies-compilation/)
 
-### Blog
+### 博客
 
+* [Jendrik Illner](https://www.jendrikillner.com/#about)
 * [Karim Naaji](http://karim.naaji.fr/posts.html)
 * [The ryg blog](https://fgiesen.wordpress.com/2011/07/09/a-trip-through-the-graphics-pipeline-2011-index/)
 * [THE DANGER ZONE](https://mynameismjp.wordpress.com/2012/10/24/msaa-overview/)
 * [AICDG](http://aicdg.com/aa/)
 * [therealmjp](https://therealmjp.github.io/posts/shader-permutations-part1/)
 
-## Engine
+## 引擎
 
 ### Framework
 
@@ -84,7 +86,7 @@ tags: [Memo, References]
 
 * [Old UE4 Wiki](https://nerivec.github.io/old-ue4-wiki/index.html)
 
-### MultiThread
+### 多线程
 
 * [UE4_CEDECKYUSHU2021_MultiThread](https://www.docswell.com/s/EpicGamesJapan/5QMWWK-UE4_CEDECKYUSHU2021_MultiThread#p19)
 * [UE5 Task Systemでお手軽な非同期処理！ ※サンプルプロジェクト配布あり](https://unrealengine.hatenablog.com/entry/2022/07/31/224504)
@@ -99,19 +101,19 @@ tags: [Memo, References]
 
 ### D3D12
 
+* [DirectX12 Programming Guide](https://learn.microsoft.com/zh-cn/windows/win32/direct3d12/directx-12-programming-guide)
 * [DirectX Specs](https://microsoft.github.io/DirectX-Specs/)
 * [A Look Inside D3D12 Resource State Barriers](https://devblogs.microsoft.com/directx/a-look-inside-d3d12-resource-state-barriers/)
 
 ### Vulkan
 
 * [Vulkan Specs](https://registry.khronos.org/vulkan/specs/1.3/html/)
-
 * [Getting the Most Out of Delta Color Compression](https://gpuopen.com/learn/dcc-overview/)
 * [Writing Data to RDG Structured Buffer / General RDG Questions](https://forums.unrealengine.com/t/writing-data-to-rdg-structured-buffer-general-rdg-questions/138823/4)
 
 * [Mesh Drawing Pipeline](https://docs.unrealengine.com/5.0/en-US/mesh-drawing-pipeline-in-unreal-engine/)
 
-### Physics
+## 物理
 
 * [[GDC 2019] UE4の新物理エンジンChaosの紹介と内製の理由](https://glhub.blogspot.com/search/label/Chaos)
 * [Matthias Research](https://matthias-research.github.io/pages/publications/publications.html)
@@ -121,27 +123,27 @@ tags: [Memo, References]
 * [SPCRJointDynamics for UE4](https://github.com/SPARK-inc/SPCRJointDynamicsUE4)
 * [CS114 Project 3: Cloth Simulation using Mass-Spring System](https://ics.uci.edu/~shz/courses/cs114/docs/proj3/index.html)
 
-## Pipeline
+## 管线
 
 * [【GDC2019】UE4 Mesh Drawing Pipeline Refactor](https://www.jianshu.com/p/ecc9785f211d)
 
-### Workflow
+### 工作流
 
 * [Bird House: Working on a Stylized Landscape in UE4](https://80.lv/articles/bird-house-working-on-a-stylized-landscape-in-ue4)
 * [映像制作での Unreal Engine 活用のはじめ](https://www.docswell.com/s/EpicGamesJapan/K7JQ65-UE4-ACTF2022#p92)
 * [PBR 背景と合わせる](https://ruyo.github.io/VRM4U/02_pbr/)
 
-### Automation
+### 自动化
 
 * [How To: BuildGraph](https://jackknobel.com/How-To/BuildGraph)
 * [Build Automation](https://de45xmedrsdbp.cloudfront.net/Resources/files/BuildTools-2031748007.pdf)
 
-### Other2
+### 其他
 
 * [UE4 文件系统](https://jashking.github.io/2018/04/20/ue4-filesystem/)
 * [UE4における自動プレイのポストモーテム](https://www.slideshare.net/EpicGamesJapan/ue4-137253042)
 
-### Optimization
+## 优化
 
 * [Using Async Collision Traces in Unreal Engine 4](https://medium.com/@bryan.corell/using-async-collision-traces-in-unreal-engine-4-2cc312c825f5)
 
@@ -152,12 +154,12 @@ tags: [Memo, References]
 * [CharacterMovementをマルチスレッド化してみよう](https://qiita.com/EGJ-Takashi_Suzuki/items/33449c17c61d1ed30079)
 * [Compact Normal Storage for small G-Buffers](https://aras-p.info/texts/CompactNormalStorage.html)
 
-### Precision
+### 精度
 
 * [Small float formats – R11G11B10F precision](https://bartwronski.com/2017/04/02/small-float-formats-r11g11b10f-precision/)
 * [Don’t Store That in a Float](https://randomascii.wordpress.com/2012/02/13/dont-store-that-in-a-float/)
   
-### Library
+## 资料库
 
 * [Game Engine Architecture Lectures](http://nikoladimitroff.github.io/Game-Engine-Architecture/)
 * [CEDiL](https://cedil.cesa.or.jp/)
@@ -173,11 +175,11 @@ tags: [Memo, References]
 * [UE5攻略リンク](https://ue5study.com/)
 * [kagring.blog](http://kagring.blog.fc2.com/blog-category-13.html)
 
-### Programming
+### 编程
 
 * [Where do I find the current C or C++ standard documents?](https://stackoverflow.com/questions/81656/where-do-i-find-the-current-c-or-c-standard-documents)
 
-## Animation
+## 动画
 
 * [UE4动画系统源码剖析](https://papalqi.cn/ue4%E5%8A%A8%E7%94%BB%E7%B3%BB%E7%BB%9F%E6%BA%90%E7%A0%81%E5%89%96%E6%9E%90/)
 * [[UE5] 簡単になったVAT（Vertex Animation Texture）で破壊してみよう](https://historia.co.jp/archives/21974)
