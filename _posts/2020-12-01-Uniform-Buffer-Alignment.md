@@ -47,7 +47,7 @@ ralloc_asprintf_append(buffer, "layout(std140) uniform %s\n{\n", block_name);
 也就是说如果你在 uniform table 中声明了一个成员，比如：
 
 ```cpp
-VIEW_UNIFORM_BUFFER_MEMBER_ARRAY(float, LightVolume[2])  　
+VIEW_UNIFORM_BUFFER_MEMBER_ARRAY(float, LightVolume[2])
 ```
 
 这段代码在 HLSL 和 GLSL 中内存的布局是不同的，在 HLSL 中和我们 C++ 中声明的长度一致。而在 GLSL 中，由于 layout 是 std140，所以这里的 LightVolume[2] 实际上占用了 32 byte，而不是 8 byte。
