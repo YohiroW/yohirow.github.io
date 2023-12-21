@@ -31,7 +31,7 @@ tags: [Memo, References]
 * [［CEDEC 2021］「BLUE PROTOCOL」のテクニカルディレクターが語る，UE4のアニメ表現。エンジン改造で実現したこだわりの実装とは](https://www.4gamer.net/games/467/G046741/20210826001/)
 * [Unreal Engine 4 Paint Filter](https://www.kodeco.com/100-unreal-engine-4-paint-filter-tutorial#toc-anchor-002)
 * [角色受多个点光源影响做法](http://walkingfat.com/%E3%80%8A%E5%A1%9E%E5%B0%94%E8%BE%BE-%E8%8D%92%E9%87%8E%E4%B9%8B%E6%81%AF%E3%80%8B%E4%B8%AD%E8%A7%92%E8%89%B2%E5%8F%97%E5%A4%9A%E4%B8%AA%E7%82%B9%E5%85%89%E6%BA%90%E5%BD%B1%E5%93%8D%E5%81%9A%E6%B3%95/)
-
+* [Deconstructing A Stylized Comic Shader](https://dev.epicgames.com/community/learning/tutorials/J3ea/unreal-engine-deconstructing-a-stylized-comic-shader)
 * [Unreal Engine 4 Rendering Part 2: Shaders and Vertex Data](https://medium.com/@lordned/unreal-engine-4-rendering-part-2-shaders-and-vertex-data-80317e1ae5f3)
 
 ### 贴图
