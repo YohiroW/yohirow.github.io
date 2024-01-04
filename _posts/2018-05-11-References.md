@@ -33,6 +33,7 @@ tags: [Memo, References]
 * [角色受多个点光源影响做法](http://walkingfat.com/%E3%80%8A%E5%A1%9E%E5%B0%94%E8%BE%BE-%E8%8D%92%E9%87%8E%E4%B9%8B%E6%81%AF%E3%80%8B%E4%B8%AD%E8%A7%92%E8%89%B2%E5%8F%97%E5%A4%9A%E4%B8%AA%E7%82%B9%E5%85%89%E6%BA%90%E5%BD%B1%E5%93%8D%E5%81%9A%E6%B3%95/)
 * [Deconstructing A Stylized Comic Shader](https://dev.epicgames.com/community/learning/tutorials/J3ea/unreal-engine-deconstructing-a-stylized-comic-shader)
 * [Unreal Engine 4 Rendering Part 2: Shaders and Vertex Data](https://medium.com/@lordned/unreal-engine-4-rendering-part-2-shaders-and-vertex-data-80317e1ae5f3)
+* [Soft Outline](https://www.tomlooman.com/unreal-engine-soft-outline/)
 
 ### 贴图
 
@@ -96,6 +97,11 @@ tags: [Memo, References]
 * [UE4 IO Store](https://www.iteye.com/blog/avi-2524009)
 * [PixelStreaming：基本概念与上手初探](https://imzlp.com/posts/9455/)
 * [UE5/UE4 C++で複数のアセットファイルを非同期読み込み（ロード）する](http://kagring.blog.fc2.com/blog-entry-777.html)
+
+## 效果
+
+* [簡単になったVAT（Vertex Animation Texture）で破壊してみよう](https://historia.co.jp/archives/21974/)
+* [コピペでOK！シーンチェンジに使えるトランジション演出を実装しよう！](https://rwiiug.hatenablog.com/entry/UE4_OtegaruTransition)
 
 ## RHI
 
@@ -174,10 +180,12 @@ tags: [Memo, References]
 * [UE4のスレッドの流れとInput Latency改善の仕組み](https://www.slideshare.net/EpicGamesJapan/ue4input-latency)
 * [UE5攻略リンク](https://ue5study.com/)
 * [kagring.blog](http://kagring.blog.fc2.com/blog-category-13.html)
+* [qiita - epicgamesjapan](https://qiita.com/organizations/epicgamesjapan)
 
 ### 编程
 
 * [Where do I find the current C or C++ standard documents?](https://stackoverflow.com/questions/81656/where-do-i-find-the-current-c-or-c-standard-documents)
+* [Programming Languages — C++](https://isocpp.org/files/papers/N4860.pdf)
 
 ## 动画
 
