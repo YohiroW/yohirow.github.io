@@ -65,6 +65,7 @@ tags: [Memo, References]
 * [THE DANGER ZONE](https://mynameismjp.wordpress.com/2012/10/24/msaa-overview/)
 * [AICDG](http://aicdg.com/aa/)
 * [therealmjp](https://therealmjp.github.io/posts/shader-permutations-part1/)
+* [Zeux](https://zeux.io/)
 
 ## 引擎
 
@@ -181,6 +182,7 @@ tags: [Memo, References]
 * [UE5攻略リンク](https://ue5study.com/)
 * [kagring.blog](http://kagring.blog.fc2.com/blog-category-13.html)
 * [qiita - epicgamesjapan](https://qiita.com/organizations/epicgamesjapan)
+* [Gamedev Guide](https://ikrima.dev/)
 
 ### 编程
 
