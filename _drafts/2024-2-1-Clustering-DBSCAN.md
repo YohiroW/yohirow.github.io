@@ -8,11 +8,13 @@ math: true
 render_with_liquid: false
 img_path: /assets/images/{}/
 image:
-  path: https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/DBSCAN-density-data.svg/1024px-DBSCAN-density-data.svg.png
+  path: https://scikit-learn.org/stable/_images/sphx_glr_plot_dbscan_002.png
 ---
 ## 介绍
 
-DBSCAN (Density-based spatial clustering of applications with noise) 是一个基于密度的聚类算法：给定空间里的一个点的集合，该算法能把附近的点分成一组（有很多相邻点的点），并标记出位于低密度区域的局外点（最接近它的点也十分远）。
+**DBSCAN (Density-based spatial clustering of applications with noise)** 是一个基于密度的聚类算法：给定空间里的一个点的集合，该算法能把附近的点分成一组（有很多相邻点的点），并标记出位于低密度区域的噪声点（最接近它的点也十分远）。
+
+原版论文在[这里](https://cdn.aaai.org/KDD/1996/KDD96-037.pdf)
 
 ## 详细描述及参数
 
@@ -21,20 +23,20 @@ DBSCAN (Density-based spatial clustering of applications with noise) 是一个�
 | $D$             | 样本集               |
 | $P_i$           | $D$ 中的各样本点      |
 | $\epsilon$      | $P_i$ 的邻域距离阈值  |
-| $minPts$        | $P_i$ 在 $\epsilon$ 范围内样本的数量 |
+| $MinPts$        | $P_i$ 在 $\epsilon$ 范围内样本的数量 |
 
-核心点
-: 满足条件，在 $\epsilon$ 范围内，具有 $minPts$ 个样本的样本点 $P_i$，称作核心点
+核心点 (Core Points)
+: 满足条件，在 $\epsilon$ 范围内，具有 $MinPts$ 个样本的样本点 $P_i$，称作核心点
 
-可达点
-: 在`核心点` $\epsilon$ 范围内，且在样本点 $\epsilon$ 范围内的样本数量小于 $minPts$，称作可达点
+边缘点 (Border Points)
+: 在`核心点` $\epsilon$ 范围内，且在样本点 $\epsilon$ 范围内的样本数量小于 $MinPts$，称作边缘点
 
-局外点
-: 非可达点，即不在核心点的 $\epsilon$ 范围内的样本点，称为局外点
+噪声点 (Noise Points/ Outlier)
+: 非可达点，即不在核心点的 $\epsilon$ 范围内的样本点，称为噪声点
 
 ![referenced from wikipedia](https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/DBSCAN-Illustration.svg/1280px-DBSCAN-Illustration.svg.png)
 
-上图中，$minPts$ = 4，点 A 和其他红色点是核心点，因为它们的 $\epsilon$ 邻域（图中红色圆圈）里包含最少 4 个点（包括自己），由于它们之间相互相可达，它们形成了一个聚类。点 B 和点 C 不是核心点，但它们可由 A 经其他核心点可达，所以也属于同一个聚类。点 N 是局外点，它既不是核心点，又不由其他点可达。
+上图中，$MinPts$ = 4，点 A 和其他红色点是核心点，因为它们的 $\epsilon$ 邻域（图中红色圆圈）里包含最少 4 个点（包括自己），由于它们之间相互相可达，它们形成了一个聚类。点 B 和点 C 不是核心点，但它们可由 A 经其他核心点可达，作为边缘点加入同一个聚类。点 N 是噪声点，它既不是核心点，又不由其他点可达。
 
 ### 距离函数
 
@@ -43,6 +45,8 @@ DBSCAN (Density-based spatial clustering of applications with noise) 是一个�
 ### 步骤
 
 ### 伪代码
+
+[论文](https://cdn.aaai.org/KDD/1996/KDD96-037.pdf) 4.1 中有提供较为细致的伪代码，下面的伪代码摘录自维基：
 
 ```python
 DBSCAN(D, eps, MinPts) {
@@ -165,13 +169,25 @@ std::vector<uint>               Noise;
 
 ### 评估
 
-当 $\epsilon$ 被设为非常大，且样本集数量比较庞大时，kd 树建树的时间消耗会非常大，因此 DBSCAN 不太适合样本分布比较平均的场合。
+#### 稳定性
 
+DBSCAN 的结果是确定的，对于给定顺序的数据集来说，相同参数下生成的 Clusters 是相同的。然而，当相同数据的顺序不同时，生成的 Clusters 较之另一种顺序会有所不同。
+
+首先，即使不同顺序的数据集的核心点是相同的，Clusters 的标签会取决于数据集中各采样点的顺序。其次，可达点被分配到哪个 Clusters 也是会受到数据顺序的影响的，比如一个边缘采样点位于一个分属于两个不同的 Clusters 的核心点的 $\epsilon$ 范围内，这时该边缘点被分配到哪个 Cluster 中取决于哪一个 Cluster 先创建。
+
+因此说 DBSCAN 是`不稳定`的。
+
+#### 效率
+
+当 $\epsilon$ 较大，且 $D$ 数量也比较庞大时，kd 树建树的时间消耗会非常大，因此 DBSCAN `不太适合样本分布比较平均的场合`。
+
+- 考虑使用 [OPTICS](https://zh.wikipedia.org/wiki/OPTICS%E7%AE%97%E6%B3%95)
 
 ## 参考
 
 - [DBSCAN](https://zh.wikipedia.org/wiki/DBSCAN)
+- [scikit-leran clustering](https://scikit-learn.org/stable/modules/clustering.html#dbscan)
 - [基于密度的聚类算法（1）——DBSCAN详解](https://zhuanlan.zhihu.com/p/643338798)
 - [常用聚类算法](https://zhuanlan.zhihu.com/p/104355127)
 - [SimpleDBSCAN](https://github.com/CallmeNezha/SimpleDBSCAN)
-- [OPTICS](https://zh.wikipedia.org/wiki/OPTICS%E7%AE%97%E6%B3%95)
+- [DBSCAN Clustering Easily Explained with Implementation](https://www.youtube.com/watch?v=C3r7tGRe2eI)
