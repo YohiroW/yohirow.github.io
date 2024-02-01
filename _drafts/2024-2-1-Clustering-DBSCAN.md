@@ -99,28 +99,13 @@ int DBSCAN<T, Float>::Run(
     , const DistanceFunc&   disfunc
 ) {
 
-    // Validate
-    if (V->size() < 1) return ERROR_TYPE::FAILED;
-    if (dim < 1) return ERROR_TYPE::FAILED;
-    if (min < 1) return ERROR_TYPE::FAILED;
-
-    // initialization
-    this->_datalen = (uint)V->size();
-    this->_visited = std::vector<bool>(this->_datalen, false);
-    this->_assigned = std::vector<bool>(this->_datalen, false);
-    this->Clusters.clear();
-    this->Noise.clear();
-    this->_minpts = min;
-    this->_data = V;
-    this->_disfunc = disfunc;
-    this->_epsilon = eps;
-    this->_datadim = dim;
+    // Validate...
+    // initialization...
 
 #if BRUTEFORCE
 #else
 this->buildKdtree(this->_data);
 #endif // !BRUTEFORCE
-
 
     for (uint pid = 0; pid < this->_datalen; ++pid) {
         // Check if point forms a cluster
@@ -154,9 +139,39 @@ this->buildKdtree(this->_data);
 #else
     this->destroyKdtree();
 #endif // !BRUTEFORCE
-    
-    return ERROR_TYPE::SUCCESS;
+    // ...
+}
+```
 
+```cpp
+template<typename T, typename Float>
+void DBSCAN<T, Float>::expandCluster(const uint cid, const std::vector<uint>& neighbors) {
+
+    std::queue<uint> border; // it has unvisited , visited unassigned pts. visited assigned will not appear
+    for (uint pid : neighbors) border.push(pid); 
+    this->addToBorderSet(neighbors);
+    
+    while(border.size() > 0) { 
+        const uint pid = border.front(); border.pop();
+
+        if (!this->_visited[pid]) {
+
+            // not been visited, great! , hurry to mark it visited
+            this->_visited[pid] = true;
+            const std::vector<uint> pidneighbors = this->regionQuery(pid);
+
+            // Core point, the neighbors will be expanded
+            if (pidneighbors.size() >= this->_minpts) {
+                this->addToCluster(pid, cid);
+                for (uint pidnid : pidneighbors) { 
+                    if (!this->isInBorderSet(pidnid)) { 
+                        border.push(pidnid); 
+                        this->addToBorderSet(pidnid);
+                    }
+                }
+            }
+        }
+    }
 }
 ```
 
@@ -167,9 +182,9 @@ std::vector<std::vector<uint>>  Clusters;
 std::vector<uint>               Noise;
 ```
 
-### 评估
+## 评估
 
-#### 稳定性
+### 稳定性
 
 DBSCAN 的结果是确定的，对于给定顺序的数据集来说，相同参数下生成的 Clusters 是相同的。然而，当相同数据的顺序不同时，生成的 Clusters 较之另一种顺序会有所不同。
 
@@ -177,7 +192,7 @@ DBSCAN 的结果是确定的，对于给定顺序的数据集来说，相同参�
 
 因此说 DBSCAN 是`不稳定`的。
 
-#### 效率
+### 效率
 
 当 $\epsilon$ 较大，且 $D$ 数量也比较庞大时，kd 树建树的时间消耗会非常大，因此 DBSCAN `不太适合样本分布比较平均的场合`。
 
