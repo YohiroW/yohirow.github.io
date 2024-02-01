@@ -30,7 +30,7 @@ img_path: /assets/images/OcclusionQuery/
 
 ### 问题
 
-上述的 Occlusion Query 带来了两个问题，分别是 CPU 与 GPU 的同步以及遮挡细节带来的精度问题。
+上述的 Occlusion Query 带来了两个问题，分别是 CPU 与 GPU 的同步问题以及遮挡细节带来的准确度问题。
 
 #### 同步
 
@@ -46,6 +46,10 @@ CPU 和 GPU 的任务之间并不是同步进行的。比如，当 CPU 给 GPU �
 树的包围盒遮挡了车的包围盒，但是对于实际的像素而言，车并没有完全被树所遮挡。
 
 一种解决方式是将一些几何体作为 Occluder 单独渲染，不经过遮挡剔除。渲染完成后，再针对较小的几何体做遮挡剔除。
+
+### 效率
+
+
 
 ## 虚幻中的 Occlusion Query
 
