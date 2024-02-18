@@ -2,8 +2,8 @@
 title: DBSCAN 聚类算法
 author: Yohiro
 date: 2024-02-01
-categories: []
-tags: []
+categories: [Algorithm, Machine Learning]
+tags: [algorithm, machine learning, clustering]
 math: true
 render_with_liquid: false
 img_path: /assets/images/{}/
