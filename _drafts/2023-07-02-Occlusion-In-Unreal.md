@@ -1,9 +1,9 @@
 ---
 title: Occlusion Query
 author: Yohiro
-date: 2020-06-16
-categories: []
-tags: []
+date: 2023-07-02
+categories: [Unreal, Rendering, Graphics]
+tags: [graphics, engine, unrealengine, occlusion query]
 render_with_liquid: false
 img_path: /assets/images/OcclusionQuery/
 ---
@@ -102,7 +102,7 @@ FViewInfo::FViewInfo(const FSceneView* InView)
 
 然后合批后在 BeginOcclusionTests 中执行绘制，在 FenceOcclusionTests 中执行同步。
 
-### 部分细节
+### 其他
 
 1. 使用 down sample 的 depth target 去绘制 Occlusion
 
@@ -151,7 +151,9 @@ enum
 static int32 GetNumBufferedFrames(ERHIFeatureLevel::Type FeatureLevel);
 ```
 
-3. 对应正交投影的视口，会丢弃几何体的 AABB 使用圆来作为几何体在场景中的代理。
+3. 正交投影的视口，会丢弃几何体的 AABB 使用圆来作为几何体在场景中的代理。
+
+4. 在引擎 5.3.2 版本中，Occlusion 部分进行了大规模的重构，详情可见[这个提交](https://github.com/EpicGames/UnrealEngine/commit/9cd755694f97946ad0e84806250d9fdf428cefc7#diff-f521e57df7b2dd21cce113d087ba67ccadedb1b5c479916e2be97dfab6fd1caf)。该提交将 Occlusion Query 任务分配到了异步的 TaskGraph 中，还暂时移除了 PrecomputedVisibility（应该是 bug？）。
 
 ## 参考
 
