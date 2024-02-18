@@ -1,7 +1,7 @@
 ---
 title: Occlusion Cull
 author: Yohiro
-date: 2023-07-02
+date: 2023-07-03
 categories: [UnrealEngine, Graphics, Rendering]
 tags: [graphics, engine, unrealengine, occlusion query]
 render_with_liquid: false
