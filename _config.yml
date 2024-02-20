@@ -86,7 +86,7 @@ avatar: /assets/img/favicons/android-chrome-512x512.png
 toc: true
 
 comments:
-  active: # The global switch for posts comments, e.g., 'disqus'.  Keep it empty means disable
+  active: "waline" # The global switch for posts comments, e.g., 'disqus'.  Keep it empty means disable
   # The active options are as follows:
   disqus:
     shortname: # fill with the Disqus shortname. › https://help.disqus.com/en/articles/1717111-what-s-a-shortname
@@ -94,6 +94,10 @@ comments:
   utterances:
     repo: # <gh-username>/<repo>
     issue_term: # < url | pathname | title | ...>
+  waline:
+    server: https://comment-archive.yohiro.cn/ # Vercal 服务端地址
+    placeholder: 哈库纳玛塔塔 # 空白评论框时显示的文字
+    avatar: mp # 默认头像  › https://waline.js.org/guide/client/avatar.html
   # Giscus options › https://giscus.app
   giscus:
     repo: # <gh-username>/<repo>
