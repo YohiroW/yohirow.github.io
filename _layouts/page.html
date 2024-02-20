@@ -55,6 +55,10 @@ layout: default
   </div>
 </div>
 
+{% if site.backgroud_animation %}
+{% include animated-background.html %}
+{% endif %}
+
 <!-- tail -->
 {% if has_tail %}
   <div class="row">

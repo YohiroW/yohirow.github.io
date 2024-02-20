@@ -75,6 +75,15 @@ google_analytics:
 #
 theme_mode: # [light|dark]
 
+# enable background animation
+backgroud_animation: false
+
+# enable click effect
+mouse_click_effect: false
+
+# enable live-2d widget
+live2d_widget: false
+
 # The CDN endpoint for images.
 # Notice that once it is assigned, the CDN url
 # will be added to all image (site avatar & posts' images) paths starting with '/'
