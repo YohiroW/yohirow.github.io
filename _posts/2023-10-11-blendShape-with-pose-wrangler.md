@@ -7,6 +7,11 @@ tags: [animation, blendshape, maya, deform]
 render_with_liquid: false
 img_path: /assets/images/blendshape/
 ---
+
+
+> 新版 Pose Wrangler 插件已经发布在了 Epic 商城中，新版插件添加了 Driver Bone 的导出模块，及其导入引擎的插件。可以[**点击这里**](https://www.unrealengine.com/marketplace/en-US/product/pose-driver-connect)获取新版插件。新版插件中对 BlendShape 的支持依然是 Experimental，具体的教程视频以及讨论串可以访问[**这个帖子**](https://forums.unrealengine.com/t/tutorial-authoring-secondary-animation-in-maya-and-unreal-with-pose-driver-connect/1496699)
+{: .prompt-warning }
+
 ## 背景
 
 Pose Wrangler 是 EpicGames 提供的Maya开源工具，原始的仓库在[**这里**](https://github.com/chrisevans3d/poseWrangler)。也可以[获取个人 fork 的版本](https://github.com/YohiroW/poseWrangler)，添加了对导出 fbx 以及 json 的支持。
@@ -17,7 +22,7 @@ Pose Wrangler 是 EpicGames 提供的Maya开源工具，原始的仓库在[**这
 
 ### 界面
 
-根据文档，python 脚本编辑器内输入以下代码以打开插件界面，
+根据文档，python 脚本编辑器内输入以下代码以打开插件界面，Driver
 
 ``` python
 from epic_pose_wrangler import main
