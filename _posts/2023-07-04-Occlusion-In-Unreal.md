@@ -1,7 +1,7 @@
 ---
 title: Occlusion Cull
 author: Yohiro
-date: 2023-07-03
+date: 2023-07-04
 categories: [UnrealEngine, Graphics, Rendering]
 tags: [graphics, engine, unrealengine, occlusion query]
 render_with_liquid: false
@@ -20,7 +20,7 @@ img_path: /assets/images/OcclusionQuery/
 
 ### 简介
 
-Occlusion Query（遮挡查询） 或 Occlusion Cull（遮挡裁剪） 很多时候混为一谈，指的是对摄像机视锥内将被遮挡几何体剔除掉的技术，但是实际上是查询不包含剔除，剔除必然伴随着查询的。Query 是 GPU 提供的用于查询渲染资源状态的对象。通过 Query 我们可以查询到 Occlusion/ TimeStamp/ PSO状态 等。Occlusion Cull 是通过 Occlusion Query 是否有像素被绘制来确定是否被遮挡，从而决定几何体的可见性的。
+Occlusion Query（遮挡查询） 或 Occlusion Cull（遮挡裁剪） 很多时候混为一谈，指的是对摄像机视锥内将被遮挡几何体剔除掉的技术，但是实际上是查询未必要剔除，剔除必然伴随着查询的。Query 是 GPU 提供的用于查询渲染资源状态的对象。通过 Query 我们可以查询到 Occlusion/ TimeStamp/ PSO状态 等。Occlusion Cull 是通过 Occlusion Query 是否有像素被绘制来确定是否被遮挡，从而决定几何体的可见性的。
 
 一个简单的 Occlusion Cull 的大致流程如下：
 
@@ -65,11 +65,11 @@ _CPU/GPU 以及 Occlusion Cull 的同步_
 
 也就是说，在使用 Occlusion Query 时应该注意一个平衡：
 
-通过 Occlusion Culling 裁剪获得的性能提升应该大于 Occlusion Test 产生的额外性能消耗，否则 Occlusion Query 的引入会对性能产生负面影响。
+*通过 Occlusion Culling 裁剪获得的性能提升应该大于 Occlusion Test 产生的额外性能消耗，否则 Occlusion Query 的引入会对性能产生负面影响。*
 
 ## 虚幻中的 Occlusion Query
 
-UE 在 Occlusion Query 之前，在 FrustumCull 中完成了 Distance Cull 也在后续完成了 Precomputed Visibility 的检查，以减少 Occlusion Test 过程中产生的 Draw call。此外，如前文所说，为解决 Occlusion Query 产生的 CPU/GPU 同步点的问题，虚幻采用的也是回读历史帧查询结果的方式，通过获取到的历史帧结果，以最大限度的减少 Occlusion Test 的消耗。
+UE 在 Occlusion Query 之前，在 FrustumCull 中完成了 Distance Cull 然后在后续完成了 Precomputed Visibility 的检查，引擎采用这些操作以减少 Occlusion Test 过程中产生的 Draw call。此外，如前文所说，为解决 Occlusion Query 产生的 CPU/GPU 同步点的问题，虚幻采用的也是回读历史帧查询结果的方式，通过获取到的历史帧结果，以最大限度的减少 Occlusion Test 的消耗。
 
 ### 大致流程
 
@@ -159,15 +159,14 @@ void FGPUOcclusionParallel::AddPrimitives(FPrimitiveRange PrimitiveRange)
 
 2. 如果有 Occlusion History 获取相应的 FRHIRenderQuery，根据 depth 的采样数量判断是否有像素绘制，从而判断是否被遮挡
 
-3. 依据包围盒去判断是否需要做 Occlusion Query
+3. 包围盒测试，依据包围盒去判断是否需要做 Occlusion Query
 
-    判断依据：
+    判断依据按优先级依次为：
 
     - 和摄像机原点的距离是否超过了 `r.NeverOcclusionTestDistance` 设置的距离
-    - 不能和近裁切面相交
-    - 透视投影，外接球不能太大
-    - 在正交投影的视锥内
-    - 通过未被遮挡的像素占画面的百分比判断是否需要创建查询
+    - 有没有和近裁切面相交
+    - 透视投影的情况下，外接球的半径要小于 HALF_WORLD_MAX
+    - 正交投影的情况下，是否位于视锥内
 
     如果包围盒测试未通过，则认定为未被遮挡。
 
@@ -211,7 +210,7 @@ void FGPUOcclusionParallel::AddPrimitives(FPrimitiveRange PrimitiveRange)
 
 7. 处理具有多个 Query 的几何体
 
-    对于 HISM 这种有多个子 Bounds 的几何体，判断是否接受这一轮 Query 的结果。如过所有的子 Bounds 都被遮挡，直接标记它为不可见。
+    对于 HISM 这种有多个子 Bounds 的几何体，判断是否接受这一轮 Query 的结果。如果所有的子 Bounds 都被遮挡，直接标记它为不可见。
 
 #### 渲染时
 
@@ -226,7 +225,7 @@ void FGPUOcclusionParallel::AddPrimitives(FPrimitiveRange PrimitiveRange)
     ViewState->TrimOcclusionHistory(ViewFamily.Time.GetRealTimeSeconds(), ViewFamily.Time.GetRealTimeSeconds() - GEngine->PrimitiveProbablyVisibleTime, ViewFamily.Time.GetRealTimeSeconds(), ViewState->OcclusionFrameCounter);
     ```
 
-    清除的条件会参考引擎配置中的一个参数，叫做`潜在可见时间（PrimitiveProbablyVisibleTime）`，指的是明确在上一次可见后过多久可以认为该几何体依然可见，引擎默认是 8 秒。
+    清除的条件会参考引擎配置中的一个参数，叫做`潜在可见时间（PrimitiveProbablyVisibleTime）`，指的是明确在上一次可见后过多久可以认为该几何体依然可见，引擎默认是 8.0。
 
     如果在 `LastConsideredTime` 后过去了 `PrimitiveProbablyVisibleTime` 这么久，那么该几何体将从 Occlusion 的历史帧中被移除。
 
@@ -292,7 +291,7 @@ void FGPUOcclusionParallel::AddPrimitives(FPrimitiveRange PrimitiveRange)
     };
     ```
 
-- 缓存的 Occlusion 历史帧最多不超过 4 帧
+- 缓存的 Occlusion 历史帧不超过 4 帧
 
     每个 FPrimitiveOcclusionHistory 都持有一个相对应的 FPrimitiveComponentId，并记录了其过去几帧（不大于 4）的 Query 结果。
 
