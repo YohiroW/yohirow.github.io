@@ -1,5 +1,5 @@
 ---
-title: Filament 笔记
+title: Filament 笔记（上）
 author: Yohiro
 date: 2019-06-29
 categories: [Rendering, graphics]
@@ -8,7 +8,7 @@ math: true
 img_path: /assets/images/Filament/
 ---
 
-大概是 [**Filament**](https://google.github.io/filament/Filament.html) 的笔记，以及部分自己的理解。
+本篇是 [**Filament**](https://google.github.io/filament/Filament.html) 的笔记，以及部分自己的理解。
 
 可以结合 Desktop 的渲染方式一起，看 Filament 的渲染为了更好地支持移动端，舍弃了哪些。
 
@@ -101,7 +101,7 @@ _宏观层面的平面（左）和微观层面的微表面（右）_
 在微观层面上，材质的表面并非完全平坦，就`无法再假设所有的入射光是平行的`，因此需要对半球进行积分，但对半球的完整的积分在实时渲染中不切实际，因此需要采用近似值。
 
 ### 电介质和导体
-Filament 里对材质属性引入了两个概念：电介质和导体。
+Filament 里对材质属性引入了两个概念：*电介质*和*导体*。
 
 入射光照射到 BRDF 模拟的材质表面后，光被分解为漫反射和镜面反射两个分量，这是一种简化的模型。
 
@@ -498,11 +498,96 @@ _感知线性粗糙度 (PerceptualRoughness，上）和重映射的粗糙度（$
 
 可见，重映射的粗糙度更方便美术同学理解。若不经重映射，光滑金属表面的值必须限制在 0.0 到 0.05 之间的小范围内。
 
-经过简单的平方，重映射的粗糙度给出的结果在视觉上很直观，对于实时渲染来说也很友好。
+经过平方，重映射的粗糙度给出的结果在视觉上很直观，对于实时渲染来说也很友好。但是也要注意，由于计算中经常需要 Roughness 项，因此计算时浮点数的精度问题需要予以重视。比如 *mediump* 精度的 *float* 在移动 GPU 上一般会作为半精度也就是 *FP16* 来实现。
+
+这样就会造成问题，比如计算 GGX 项中的 $\frac{1}{perceptualRoughness^4}$ 时，由于半精度浮点数可表示的最小值为 $2^{-14
+}$ 或 $6.1 × 10^{-5}$，在不支持非规格化的设备上为了避免除以 0，这一项的结果必须不小于 $6.1 × 10^{-5}$， 为此 Roughness 必须被 clamp 到 0.089，也就是 $6.274 × 10^{-5}$。
+
+很多时候为了控制镜面高光处于一个更小的范围，Roughness 也需要 clamp 到一个安全的范围，对于较低的 Roughness 值，这种 clamp 还可以避免高光出现的锯齿。
+
+关于浮点数相关的内容可以查看[**这里**]()。
 
 #### Reflectance
 
+电介质
+: 菲涅尔项依赖于法向的镜面反射率 $f_0$ ，对于电介质材质是消色差的，可以用灰度来描述。Filament 中使用 [Moving Frostbite to PBR](https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/s2014-pbs-frostbite-slides.pdf) 中所提到的电介质表面对反射率进行重映射：
+
+$$\begin{equation}
+f_0 = 0.16 * {reflectance}^2
+\end{equation}$$
+
+这种做法的目标是将 $f_0$ 映射到常见的电介质表面（约 4%）以及宝石（8% ~ 16%）的菲涅尔值的范围内。
+![Diagram_Reflectance](diagram_reflectance.png)
+_常见材质的反射率_
+
+假如折射率（IOR）已知，$f_0$ 可以做如下计算：
+
+$$\begin{equation}
+f_0 = \frac{(n_{ior} - 1)^2}{(n_{ior} + 1)^2}  
+\end{equation}$$
+
+而假如反射率已知，也可以反求出其折射率：
+
+$$\begin{equation}
+n_{ior} = \frac{2}{1 - \sqrt{f_0}} - 1
+\end{equation}$$
+
+下表中描述了自然界常见材质的菲涅尔反射率：
+
+| 材料 | 反射率 | 折射率 | 线性值 |
+|:-----|:------|:------|:------|
+| 水   | 2% | 1.33 | 0.35 |
+| 织物 | 4%~ 5.6% | 1.5~ 1.62 | 0.5~ 0.59 |
+| 常见液体 | 2%~ 4% | 1.33~ 1.5 | 0.35~ 0.5 |
+| 常见宝石 | 5%~ 16% | 1.58~ 2.33 | 0.56~ 1.0 |
+| 塑料/玻璃 | 4%~ 5% | 1.5~ 1.58 | 0.5~ 0.56 |
+| 其他介电材料 | 2%~ 5% | 1.33~ 1.58 | 0.35~ 0.56 |
+| 眼睛 | 2.5% | 1.38 | 0.39 |
+| 皮肤 | 2.8% | 1.4 | 0.42 | 
+| 头发 | 4.6% | 1.55 | 0.54 |
+| 牙齿 | 5.8% | 1.63 | 0.6 |
+| 默认 | 4% | 1.5 | 0.5 |
+
+在 Filament 中所有掠射角的反射率有 $F_{90} = 1.0$
+
+导体
+: 金属表面的镜面反射率不是消色的，是彩色的：
+
+$$\begin{equation}
+f_0 = {baseColor}* {metallic}
+\end{equation}$$
+
+对于电介质和金属材质而言，Filament 使用下面的方法计算 $f_0$:
+```c
+vec3 f0 = 0.16 * reflectance * reflectance * (1.0 - metallic) + baseColor * metallic;
+```
+### 材质参考
+
+Filament 提供了一个[**材质制作参考**](https://google.github.io/filament/Material%20Properties.pdf)，帮助使用者制作自己的 PBR 材质。
+
+对全体材质
+: BaseColor 应该没有除微表面的遮挡外的一切光照信息。
+
+    金属度为非 0 即 1 的值，纯导体为 1，纯电介质为 0，因此对于这两类材质的金属度应该为接近 0 或 1的值，中间值应用于表面类型的过渡，如金属到铁锈。
+ 
+对非金属材质
+: BaseColor 代表的是反射的颜色，应为 sRGB 50~ 240 或 sRGB 30~ 240
+
+    金属度应该为 0 或者接近 0 的值。反射率如果找不到合适的值，可以为 sRGB 127 (Linear 0.5， Reflectance 4%)
+
+    反射率不宜小于 sRGB 90（Linear 0.33，Reflectance 2%）
+
+对金属材质
+: BaseColor 代表高光和反射的颜色，亮度应在 67%~ 100% (sRGB 170~ 255)，被氧化过或者更脏的金属可以考虑使用更低的值。
+
+    金属度为 1 或者接近 1 的值。
+    
+    反射率可以被忽略，或由 BaseColor 计算而来。
+
+
 ### 透明涂层模型
+
+
 
 ### 各向异性模型
 
@@ -510,32 +595,5 @@ _感知线性粗糙度 (PerceptualRoughness，上）和重映射的粗糙度（$
 
 ### 布料模型
 
-## 光照
-
-### 单位
-
-### 直接光照
-
-### IBL
-
-### 静态光照
-
-### 遮挡
-
-### 法线贴图
-
-## 体积效果
-
-## 反走样
-
-## 图像管线
-
-## 基于现实的相机
-
-## 后处理
-
-## 坐标系
-
-## 附件
 
 - [physically-based-shading-on-mobile](https://www.unrealengine.com/en/blog/physically-based-shading-on-mobile)
