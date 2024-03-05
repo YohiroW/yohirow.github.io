@@ -12,11 +12,11 @@ image:
 ---
 ## 介绍
 
-**DBSCAN (Density-based spatial clustering of applications with noise)** 是一个基于密度的聚类算法：给定空间里的一个点的集合，该算法能把附近的点分成一组（有很多相邻点的点），并标记出位于低密度区域的噪声点（最接近它的点也十分远）。
+**DBSCAN (Density-based spatial clustering of applications with noise)** 是一个基于密度的聚类算法：给定空间里的一个点集，该算法能把附近的点分成一组（有很多相邻点的点），并标记出位于低密度区域的噪声点。
 
 原版论文在[这里](https://cdn.aaai.org/KDD/1996/KDD96-037.pdf)
 
-## 详细描述及参数
+## 概念描述及参数
 
 | 标识             | 含义                |
 |:----------------|:--------------------|
@@ -38,11 +38,31 @@ image:
 
 上图中，$MinPts$ = 4，点 A 和其他红色点是核心点，因为它们的 $\epsilon$ 邻域（图中红色圆圈）里包含最少 4 个点（包括自己），由于它们之间相互相可达，它们形成了一个聚类。点 B 和点 C 不是核心点，但它们可由 A 经其他核心点可达，作为边缘点加入同一个聚类。点 N 是噪声点，它既不是核心点，又不由其他点可达。
 
+直接密度可达 (directly density-reachable)
+: 
+
+密度可达 (density-reachable)
+: 
+
+密度相连 (density-connected)
+: 
+
 ### 距离函数
 
 ## 算法
 
 ### 步骤
+
+为确定 Cluster, DBSCAN 算法首先从集合里任意一点 $P$ 开始遍历所有密度可达点。然后根据 $\epsilon$ 和 $MinPts$ 判断 $P$ 是核心点还是边缘点。
+
+如果 $P$ 是核心点，该流程会产生一个 Cluster。
+
+如果 $P$ 是边缘点，那么没有任何点是从 $P$ 密度可达的，DBSCAN 将会从样本集中选择下一个点重复该过程。
+
+对于存在多个 Cluster 的情况，算法会根据规则进行合并，这个规则是：
+
+- Cluster 中 \$P\$ 的密度可达点属于该 Cluster
+- Cluster 中 \$P\$ 的密度相连点属于该 Cluster
 
 ### 伪代码
 
