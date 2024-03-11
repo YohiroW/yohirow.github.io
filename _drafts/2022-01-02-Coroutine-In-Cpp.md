@@ -15,22 +15,6 @@ img_path: /assets/images/{}/
 其中有这么一段，
 
 ```c#
-IEnumerator easePopOut()
-{
-    // ...
-
-    while (currentTime < duration)
-    {
-        yield return new WaitForEndOfFrame();
-        currentTime = Mathf.Clamp(currentTime += Time.deltaTime, 0, duration);
-
-        float valueX = EaseAnimate.EaseInSine(start, end, currentTime / duration);
-        transform.localPosition = new Vector3(valueX, transform.localPosition.y, transform.localPosition.z);
-    }
-}
-```
-
-```c#
 StopCoroutine("ticker");
 if (isAnimPlaying)
 {
@@ -64,5 +48,9 @@ public IEnumerator ticker()
 }
 ```
 
-以同步的方式写异步的逻辑
+先不要吐槽代码风格，还有裸字符串当参数的行为，这种以同步的方式写异步的逻辑的编程方式就是协程。协程可以在函数执行的时，在函数体的某个位置挂起并返回，将当前线程的执行让渡给其他的任务
 
+## References
+
+- [N4680](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/n4680.pdf)
+- [Coroutine Theory](https://lewissbaker.github.io/2017/09/25/coroutine-theory)
