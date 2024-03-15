@@ -8,14 +8,11 @@ order: 4
 
 <head>
 <meta charset="utf-8">
-<link href="/assets/css/proj1.css" rel="stylesheet">
-<link href="/assets/css/spectrum.css" rel="stylesheet">
+<link href="/assets/css/proj3.css" rel="stylesheet">
 
 <!-- Useful 3rd party libraries -->
 <script type="text/javascript" src="/assets/js/jquery-1.12.2.min.js"></script>
-<script type="text/javascript" src="/assets/js/spectrum.js"></script>
 <script type="text/javascript" src="/assets/js/glMatrix-0.9.5.js"></script>
-<script type="text/javascript" src="/assets/js/webgl-obj-loader.js"></script>
 
 <!-- Shader initialization utils -->
 <script type="text/javascript" src="/assets/js/shader-utils.js"></script>
@@ -24,28 +21,16 @@ order: 4
 <script type="text/javascript" src="/assets/js/webgl-debug.js"></script>
 <script type="text/javascript" src="/assets/js/debug-utils.js"></script>
 
-<!-- Model data -->
-<script type="text/javascript" src="/assets/meshes/teapot_obj.js"></script>
-<script type="text/javascript" src="/assets/meshes/bunny_obj.js"></script>
+<!-- Simulation-related functions -->
+<script type="text/javascript" src="/assets/proj3_sim.js"></script>
 
 <!-- WebGL functions -->
-<script type="text/javascript" src="/assets/proj1_webgl.js"></script>
+<script type="text/javascript" src="/assets/proj3_webgl.js"></script>
 
 <!-- Other javascript functions -->
-<script type="text/javascript" src="/assets/proj1.js"></script>
+<script type="text/javascript" src="/assets/proj3.js"></script>
 
-<!-- Simple vertex shader for drawing the light source as a point -->
-<script id="shader-vs-light" type="x-shader/x-vertex">
-    uniform mat4 uPMatrix;
-    attribute vec3 aVertexPosition;
-
-    void main(void) {
-        gl_PointSize = 10.0;        
-        gl_Position = uPMatrix * vec4(aVertexPosition, 1.0);
-    }
-</script>
-
-<!-- Common vertex shader for all shading models -->
+<!-- Vertex shader -->
 <script id="shader-vs" type="x-shader/x-vertex">
     uniform mat4 uMVMatrix;             // Model-view matrix
     uniform mat4 uPMatrix;              // Projection matrix
@@ -53,6 +38,12 @@ order: 4
 
     attribute vec3 aVertexPosition;     // Vertex position in object space
     attribute vec3 aVertexNormal;       // Vertex normal in object space
+    attribute vec3 aVertexColor;
+    attribute float aVertexAlpha;
+
+
+    varying float vAlpha;
+    varying vec3 vColor;
 
     varying vec3 vPosition;             // Vertex position (camera space)
     varying vec3 vNormal;               // Vertex normal (camera space)
@@ -61,366 +52,244 @@ order: 4
         vec4 camSpacePosition = uMVMatrix * vec4(aVertexPosition, 1.0);
         vPosition = vec3(camSpacePosition);
 
-        gl_Position = uPMatrix * camSpacePosition;
+        gl_Position = uPMatrix * camSpacePosition;        
 
         vec4 camSpaceNormal = uNMatrix * vec4(aVertexNormal, 0.0);
         vNormal = vec3(camSpaceNormal);
+        vColor = aVertexColor;
+        vAlpha = aVertexAlpha;
     }
 </script>
 
-<!-- Fragment shader: light draing -->
-<script id="shader-fs-light" type="x-shader/x-fragment">
-    precision mediump float;
-
-    void main(void) {
-        gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0);
-    }
-</script>
-
-<!-- Fragment shader: white -->
-<script id="shader-fs0" type="x-shader/x-fragment">
-    precision mediump float;
-
-    varying vec3 vPosition;             // Vertex position (camera space)
-    varying vec3 vNormal;               // Vertex normal (camera space)
-
-    void main(void) {
-        // Dummy variable to ensure the use of all vertex attributes.
-        vec4 zero = vec4(vPosition + vNormal - vPosition - vNormal, 0.0);
-
-        gl_FragColor = zero + vec4(1.0, 1.0, 1.0, 1.0);
-    }
-</script>
-
-<!-- Fragment shader: position -->
-<script id="shader-fs1-1" type="x-shader/x-fragment">
-    precision mediump float;
-
-    varying vec3 vPosition;             // Vertex position (camera space)
-    varying vec3 vNormal;               // Vertex normal (camera space)
-
-    void main(void) {
-        // Dummy variable to ensure the use of all vertex attributes.
-        vec4 zero = vec4(vPosition + vNormal - vPosition - vNormal, 0.0);
-
-        // Task 1-1
-        gl_FragColor = vec4(abs(vPosition), 1.0); // FIXME
-    }
-</script>
-
-<!-- Fragment shader: normal -->
-<script id="shader-fs1-2" type="x-shader/x-fragment">
-    precision mediump float;
-
-    varying vec3 vPosition;             // Vertex position (camera space)
-    varying vec3 vNormal;               // Fragment normal (camera space)
-
-    void main(void) {
-        // Dummy variable to ensure the use of all vertex attributes.
-        vec4 zero = vec4(vPosition + vNormal - vPosition - vNormal, 0.0);
-
-        // Task 1-2
-        gl_FragColor = vec4(abs(normalize(vNormal)), 1.0); // FIXME
-    }
-</script>
-
-<!-- Fragment shader: lighting direction -->
-<script id="shader-fs1-3" type="x-shader/x-fragment">
+<!-- Fragment shader (Blinn-Phong) -->
+<script id="shader-fs" type="x-shader/x-fragment">
     precision mediump float;
 
     uniform vec3 uLightPos;             // Light position in camera space
-
-    varying vec3 vPosition;             // Fragment position (camera space)
-    varying vec3 vNormal;               // Fragment normal (camera space)    
-
-    void main(void) {
-        // Dummy variable to ensure the use of all vertex attributes.
-        vec4 zero = vec4(vPosition + vNormal - vPosition - vNormal, 0.0);
-
-        // Task 1-3
-        gl_FragColor = vec4( abs(normalize(uLightPos - vPosition)), 1.0); // FIXME
-    }
-</script>
-
-<!-- Fragment shader: diffuse shading -->
-<script id="shader-fs2" type="x-shader/x-fragment">
-    precision mediump float;
-
-    uniform vec3 uLightPos;             // Light position in camera space
-    uniform float uLightPower;          // Light power
-    uniform vec3 uDiffuseColor;         // Diffuse color    
-    uniform float uAmbient;             // Ambient
-
     varying vec3 vPosition;             // Fragment position (camera space)
     varying vec3 vNormal;               // Fragment normal (camera space)
+    varying vec3 vColor;
+    varying float vAlpha;
+
+  
 
     void main(void) {
-        // Dummy variable to ensure the use of all vertex attributes.
-        vec4 zero = vec4(vPosition + vNormal - vPosition - vNormal, 0.0);
+        vec3 vLight = uLightPos - vPosition;
+        float dist = length(vLight);
+        vLight = vLight/dist;
 
-        // Task 2
-        vec3 i = uLightPos - vPosition;
-        float ImcomIntensity = uLightPower/((length(i)*length(i)/5.0) + 5.0);
-        vec3 DiffuseShading = uDiffuseColor*(ImcomIntensity*max(dot(normalize(vNormal),normalize(i)),0.0) + uAmbient);
-        gl_FragColor = vec4(DiffuseShading, 1.0); // FIXME
+        vec3 vView = normalize(-vPosition);
+        vec3 vHalf = normalize(vView + vLight);
+        vec3 vNormal_ = normalize(vNormal);
+        if ( dot(vNormal_, vView) < 0.0 ) vNormal_ = -vNormal_;
 
-    }
-</script>
+        vec3 diffClr = vColor;
+        float ambient = 0.2;
 
-<!-- Fragment shader: Phong shading -->
-<script id="shader-fs3-1" type="x-shader/x-fragment">
-    precision mediump float;
+        float diff = max(dot(vNormal_, vLight), 0.0);
+        float spec = pow(max(dot(vNormal_, vHalf), 0.0), 10.0);
+        vec3 I = 5.0*(diffClr*diff + spec)/(5.0 + 0.2*dist*dist) + diffClr*ambient;
 
-    uniform vec3 uLightPos;             // Light position in camera space
-    uniform float uLightPower;          // Light power
-    uniform vec3 uDiffuseColor;         // Diffuse color
-    uniform float uExponent;            // Phong exponent
-    uniform float uAmbient;             // Ambient
-
-    varying vec3 vPosition;             // Fragment position (camera space)
-    varying vec3 vNormal;               // Fragment normal (camera space)
-
-    void main(void) {
-        // Dummy variable to ensure the use of all vertex attributes.
-        vec4 zero = vec4(vPosition + vNormal - vPosition - vNormal, 0.0);
-
-        // Task 3-1
-        vec3 i = uLightPos-vPosition;
-        vec3 normal_i = normalize(i);
-        vec3 n = normalize(vNormal);
-        vec3 Viewing = -normalize(vPosition);
-        vec3 Reflected = 2.0*n*dot(n,normal_i) - normal_i;
-        if (dot(n,normal_i) > 0.0){
-        	float I = uLightPower/((length(i)*length(i)/5.0) + 5.0);
-        	vec3 color = uDiffuseColor*(I*dot(n,normal_i ) + uAmbient) + 
-        				I*pow(max(dot(Viewing,Reflected),0.0),uExponent); 
-        	gl_FragColor = vec4(color,1.0);
-        }
-        else
-         	gl_FragColor = vec4(uDiffuseColor*uAmbient, 1.0); // FIXME
-    }
-</script>
-
-<!-- Fragment shader: Blinn-Phong shading -->
-<script id="shader-fs3-2" type="x-shader/x-fragment">
-    precision mediump float;
-
-    uniform vec3 uLightPos;             // Light position in camera space
-    uniform float uLightPower;          // Light power
-    uniform vec3 uDiffuseColor;         // Diffuse color
-    uniform float uExponent;            // Blinn-Phong exponent
-    uniform float uAmbient;             // Ambient
-
-    varying vec3 vPosition;             // Fragment position (camera space)
-    varying vec3 vNormal;               // Fragment normal (camera space)
-
-    void main(void) {
-        // Dummy variable to ensure the use of all vertex attributes.
-        vec4 zero = vec4(vPosition + vNormal - vPosition - vNormal, 0.0);
-
-        // Task 3-2
-        vec3 n = normalize(vNormal);
-        vec3 i = uLightPos-vPosition;
-        vec3 normal_i = normalize(uLightPos-vPosition);
-        if (dot(n,i) > 0.0){
-        	vec3 o = -normalize(vPosition);
-        	vec3 h = normalize(i+o);
-        	float I = uLightPower/((length(i)*length(i)/5.0) + 5.0);
-        	vec3 color = uDiffuseColor*(I*dot(n,normal_i)+uAmbient) +
-        	 				I*pow(dot(n,h),uExponent);
-        	gl_FragColor = vec4(color , 1.0); 
-        }
-        else
-         	gl_FragColor = vec4(uDiffuseColor*uAmbient, 1.0); 
-    }
-</script>
-
-<!-- Fragment shader: microfacet shading -->
-<script id="shader-fs4" type="x-shader/x-fragment">
-    precision mediump float;
-
-    uniform vec3 uLightPos;             // Light position in camera space
-    uniform float uLightPower;          // Light power
-    uniform vec3 uDiffuseColor;         // Diffuse color
-    uniform float uBeta;                // Roughness
-    uniform float uIOR;                 // Index of refraction
-    uniform float uAmbient;             // Ambient
-
-    varying vec3 vPosition;             // Fragment position (camera space)
-    varying vec3 vNormal;               // Fragment normal (camera space)
-
-    void main(void) {
-        // Dummy variable to ensure the use of all vertex attributes.
-        vec4 zero = vec4(vPosition + vNormal - vPosition - vNormal, 0.0);
-
-        // Task 4
-        float PI = 3.1415926535897932384626433832795;
-        vec3 n = normalize(vNormal);
-        vec3 i = uLightPos-vPosition;
-        vec3 normal_i = normalize(uLightPos-vPosition);
-        if (dot(n,normal_i) > 0.0){
-        	vec3 o = -normalize(vPosition);
-        	vec3 h = normalize(i+o);
-        	float I = uLightPower/((length(i)*length(i)/5.0) + 5.0);
-
-        	//Find Fresnel factor 
-        	float c = dot(normal_i ,h);
-        	float g = pow((uIOR*uIOR-1.0+c*c),0.5);
-        	float gmc = g - c;
-        	float gpc = g + c;
-        	float gF = (c*gpc - 1.0)/(c*gmc + 1.0);
-        	float F = 0.5*((gmc*gmc)/(gpc*gpc))*(1.0 + gF*gF);
-
-        	//Find GGX normal distribution function
-			float D = (uBeta*uBeta)/(PI*pow(dot(n,h),4.0)*pow((uBeta*uBeta + (1.0/pow(dot(n,h),2.0)-1.0)),2.0));
-       		
-       		//Find shadowing-masking function 
-       		float tan2i = (1.0/pow(dot(n,normal_i),2.0)) - 1.0;
-       		float tan2o = (1.0/pow(dot(n,o),2.0)) - 1.0;
-       		float gi = 2.0/(1.0 + pow(1.0+uBeta*uBeta*tan2i,0.5));
-       		float go = 2.0/(1.0 + pow(1.0+uBeta*uBeta*tan2o,0.5));
-       		float G = gi*go;
-
-        	// find color
-        	vec3 color = I*dot(n,normal_i)*(uDiffuseColor + (F*D*G)/(4.0*dot(n,normal_i)*dot(n,o))) + 
-        		uDiffuseColor*uAmbient;
-        	gl_FragColor = vec4(color , 1.0); 
-        }
-        else
-         	gl_FragColor = vec4(uDiffuseColor*uAmbient, 1.0); 
+        gl_FragColor = vec4(I, 1.0*vAlpha);
     }
 </script>
 </head>
 
+
 <!-- HTML contents -->
 <body>
-    <div class="droplist">
-        <span>
-            Object:
-            <select onchange="changeActiveMesh(this);">
-              <option value="0" selected="selected">Utah teapot</option>
-              <option value="1">Stanford bunny</option>
-            </select>
-        </span>
-        <span style="margin-left:30px">
-            Resolution:
-            <select onchange="changeResolution(this);">
-              <option value="0">640x360</option>
-              <option value="1">800x450</option>
-              <option value="2" selected="selected">960x540</option>
-            </select>
-        </span>
-        <table>
-            <tr>
-                <td width="200px"><input type="checkbox" onchange="changeAnimatedState(this.checked);">Animated object</td>
-                <td>
-                    <input id="sliderBar" type="range" min="1" max="36" value="6" onchange="updateSlider(this.value);" disabled>
-                    (<span id="sliderAmount">60</span>&deg;/s)
-                </td>
-            </tr>
-        </table>
+
+    <div style="margin-top:10px; float:left">
+        <canvas id="canvas0" style="border:none;" width="600" height="800"></canvas>
     </div>
-    <div style="margin-top:10px">
-        <canvas id="canvas0" style="border:none;" width="960" height="540"></canvas>
-    </div>
-    <div class="panel">
-        <p>Light Source Parameters</p>
-        <table>
-            <tr>
-                <td colspan="2"><input type="checkbox" onchange="changeShowLightState(this.checked);">Draw light source (as a point)</td>
-            </tr>
-            <tr>
-                <td width="200px"><input checked type="checkbox" onchange="changeAnimatedLightState(this.checked);">Animated light</td>
-                <td>
-                    <input id="sliderBarLight" enabled type="range" min="1" max="36" value="6" onchange="updateSliderLight(this.value);">
-                    (<span id="sliderAmountLight">60</span>&deg;/s)
-                </td>
-            </tr>
-            <tr>
-                <td>Light power</td>
-                <td>
-                    <input id="sliderBar_LightPower" type="range" min="1" max="20" value="10" onchange="updateSlider_LightPower(this.value);">
-                    (<span id="sliderAmount_LightPower">5</span>)
-                </td>
-            </tr>
-        </table>
-    </div>
-    <div class="panel" style="margin-left:10px">
-        <p>Shading Parameters (Common)</p>
-        <table>
-            <tr>
-                <td width="200px">Shader</td>
-                <td>
-                    <select onchange="changeActiveShader(this);">
-                        <option value="0">White</option>
-                        <option value="1">Position</option>
-                        <option value="2">Normal</option>
-                        <option value="3">Lighting Dir.</option>
-                        <option value="4">Diffuse Shading</option>
-                        <option value="5">Phong Shading</option>
-                        <option value="6" selected="selected">Blinn-Phong Shading</option>
-                        <option value="7">(Isotropic) Microfacet Shading</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>Diffuse Color</td>
-                <td>
-                    <input type="text" id="colorPicker"> (<span id="colorText">#1f75fe</span>)
-                </td>
-            </tr>
-            <tr>
-                <td>Specular Color</td>
-                <td>
-                    <!-- Extra credit -->
-                    #ffffff
-                </td>
-            </tr>            
-            <tr>
-                <td>Ambient</td>
-                <td>
-                    <input type="range" min="0" max="50" value="10" onchange="updateSlider_Ambient(this.value);">
-                    (<span id="sliderAmount_Ambient">0.1</span>)
-                </td>
-            </tr>
-            <tr class="phong-panel" style="display:none">
-                <td colspan="2"><hr><p>Shading Parameters (Phong)</p></td>
-            </tr>
-            <tr class="phong-panel" style="display:none">
-                <td>Exponent</td>
-                <td>
-                    <input type="range" min="1" max="40" value="10" onchange="updateSlider_PhongExp(this.value);">
-                    (<span id="sliderAmount_PhongExp">50</span>)
-                </td>
-            </tr>            
-            <tr class="blinn-phong-panel" style="display:none">
-                <td colspan="2"><hr><p>Shading Parameters (Blinn-Phong)</p></td>
-            </tr>
-            <tr class="blinn-phong-panel" style="display:none">
-                <td>Exponent</td>
-                <td>
-                    <input type="range" min="1" max="40" value="10" onchange="updateSlider_BlinnPhongExp(this.value);">
-                    (<span id="sliderAmount_BlinnPhongExp">50</span>)
-                </td>
-            </tr>
-            <tr class="microfacet-panel" style="display:none">
-                <td colspan="2"><hr><p>Shading Parameters (Microfacet)</p></td>
-            </tr>
-            <tr class="microfacet-panel" style="display:none">
-                <td>Index of Refraction</td>
-                <td>
-                    <input id="sliderBar_MicrofacetIOR" type="range" min="20" max="100" value="50" onchange="updateSlider_MicrofacetIOR(this.value);">
-                    (<span id="sliderAmount_MicrofacetIOR">5.0</span>)
-                </td>
-            </tr>            
-            <tr class="microfacet-panel" style="display:none">
-                <td>Beta</td>
-                <td>
-                    <input id="sliderBar_MicrofacetBeta" type="range" min="5" max="50" value="20" onchange="updateSlider_MicrofacetBeta(this.value);">
-                    (<span id="sliderAmount_MicrofacetBeta">0.2</span>)
-                </td>
-            </tr>
-        </table>
+    <div style="margin-left:10px; float:left">
+        <div class="panel">
+            <p>Rendering Control</p>
+            <table>
+                <tr>
+                    <td width="200px">Resolution</td>
+                    <td width="230px">
+                        <select onchange="changeResolution(this);">
+                            <option value="0">480x640</option>
+                            <option value="1" selected="selected">600x800</option>
+                            <option value="2">720x960</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Drawing Mode</td>
+                    <td>
+                        <select onchange="changeMode(this.value);">
+                            <option value="0" selected="selected">Normal</option>
+                            <option value="1">Wire-frame</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Camera Depth</td>
+                    <td>
+                        <input type="range" min="-60" max="-1" value="-10" onchange="updateSliderCameraDepth(this.value);">
+                        (<span id="sliderAmountCameraDepth">-10</span>)
+                    </td>
+                </tr> 
+                <tr>
+                    <td><input type="checkbox" onchange="changeRotatingState(this.checked);">Rotating object</td>
+                    <td>
+                        <input id="sliderBar" type="range" min="1" max="36" value="6" onchange="updateSlider(this.value);" disabled>
+                        (<span id="sliderAmount">60</span>&deg;/s)
+                    </td>
+                </tr>        
+                <tr>
+                    <td><input type="checkbox" onchange="changeAnimatedLightState(this.checked);">Rotating light</td>
+                    <td>
+                        <input id="sliderBarLight" type="range" min="1" max="36" value="6" onchange="updateSliderLight(this.value);" disabled>
+                        (<span id="sliderAmountLight">60</span>&deg;/s)
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div style="clear:left"></div>
+        <div class="panel">
+            <p>Animation Control</p>
+            <table>
+                <tr>
+                    <td width="200px">Mesh Resolution</td>
+                    <td width="230px">
+                        <select onchange="changeMeshResolution(this.value);">
+                            <option value="1">15x15</option>
+                            <option value="2" selected="selected">25x25</option>
+                            <option value="3">35x35</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input type="checkbox" onchange="changeAnimatedState(this.checked);" checked>Animated
+                    </td>
+                    <td>
+                        <button type="botton" onclick="resetMesh();">Restart</button>
+                        &nbsp;
+                        <button type="botton" onclick="window.location.reload();">Reset parameters</button>
+                    </td>                
+                </tr>
+                <tr>
+                    <td>Particle Mass</td>
+                    <td>
+                        <input type="range" min="1" max="50" value="10" onchange="updateSliderMass(this.value);">
+                        (<span id="sliderAmountMass">1.0</span>)
+                    </td>
+                </tr>             
+                <tr>
+                    <td>Structural Stiffness</td>
+                    <td>
+                        <input type="range" min="1" max="50" value="25" onchange="updateSliderK0(this.value);">
+                        (<span id="sliderAmountK0">25</span>&times;10<sup>3</sup>)
+                    </td>
+                </tr>
+                <tr>
+                    <td>Shear Stiffness</td>
+                    <td>
+                        <input type="range" min="1" max="50" value="25" onchange="updateSliderK1(this.value);">
+                        (<span id="sliderAmountK1">25</span>&times;10<sup>3</sup>)
+                    </td>
+                </tr>
+                <tr>
+                    <td>Bend Stiffness</td>
+                    <td>
+                        <input type="range" min="1" max="50" value="25" onchange="updateSliderK2(this.value);">
+                        (<span id="sliderAmountK2">25</span>&times;10<sup>3</sup>)
+                    </td>
+                </tr>
+                <tr>
+                    <td>Damping</td>
+                    <td>
+                        <input type="range" min="0" max="10" value="5" onchange="updateSliderCd(this.value);">
+                        (<span id="sliderAmountCd">0.5</span>)
+                    </td>
+                </tr>
+                <tr>
+                    <td>Viscous</td>
+                    <td>
+                        <input type="range" min="0" max="20" value="5" onchange="updateSliderCv(this.value);">
+                        (<span id="sliderAmountCv">0.5</span>)
+                    </td>
+                </tr>    
+				<tr>
+                    <td>Wind Velocity</td>
+                    <td>
+                        <input type="range" min="0" max="50" value="15" onchange="updateSliderWind(this.value);">
+                        (<span id="sliderAmountWind">15</span>)
+                    </td>
+                </tr>  
+				<tr>
+                    <td>Wind Angle</td>
+                    <td>
+                        <input type="range" min="0" max="360" value="0" onchange="updateSliderWindangle(this.value);">
+                        (<span id="sliderAmountWindangle">0</span>)
+                    </td>
+                </tr>
+				<tr>
+                    <td>Ball X</td>
+                    <td>
+                        <input type="range" min="-25" max="25" value="0" onchange="updateSliderBallX(this.value);">
+                        (<span id="sliderAmountBallX">0</span>)
+                    </td>
+                </tr>
+				<tr>
+                    <td>Ball Y</td>
+                    <td>
+                        <input type="range" min="-25" max="25" value="0" onchange="updateSliderBallY(this.value);">
+                        (<span id="sliderAmountBallY">0</span>)
+                    </td>
+                </tr>
+				
+				<tr>
+                    <td>Ball Z</td>
+                    <td>
+                        <input type="range" min="-25" max="25" value="0" onchange="updateSliderBallZ(this.value);">
+                        (<span id="sliderAmountBallZ">0</span>)
+                    </td>
+                </tr>
+				<tr>
+                    <td>Ball Radius</td>
+                    <td>
+                        <input type="range" min="4" max="10" value="4" onchange="updateSliderBallR(this.value);">
+                        (<span id="sliderAmountBallR">4</span>)
+                    </td>
+                </tr>
+                <tr>
+                    <td>Burning Speed</td>
+                    <td>
+                        <input type="range" min="1.0" max="50.0" value="20.0" onchange="updateSliderBurningSpeed(this.value);">
+                        (<span id="sliderAmountBurningSpeed">20.0</span>)
+                    </td>
+                </tr>
+                <tr>
+                    <td>Raining Frequency</td>
+                    <td>
+                        <input type="range" min="10.0" max="70.0" value="30.0" onchange="updateSliderRainingSpeed(this.value);">
+                        (<span id="sliderAmountRainingSpeed">30.0</span>)
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input name="mode" type="radio" id="burn" value="burn"> Burn Mode<br>
+                    </td>
+                    <td>
+                        <input name="burnstart" id="topleft" type="radio" value="topleft"> Top Left
+                        <input name="burnstart" id="bottomleft" type="radio" value="bottomleft" checked="checked"> Bottom Left<br>
+                        <input name="burnstart" id="topright" type="radio" value="topright"> Top Right 
+                        <input name="burnstart" id="bottomright" type="radio" value="bottomright"> Bottom Right <br>
+                        <input name="burnstart" id="center" type="radio" value="center">    Center
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <input name="mode" type="radio" id="raindrop" value="raindrop" unchecked /> Rain Mode<br>
+                    </td>
+                </tr>
+            </table>
+        </div>
     </div>
     <div style="clear:left"></div>
 </body>
