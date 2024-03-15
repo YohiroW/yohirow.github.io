@@ -41,7 +41,6 @@ order: 4
     attribute vec3 aVertexColor;
     attribute float aVertexAlpha;
 
-
     varying float vAlpha;
     varying vec3 vColor;
 
@@ -52,7 +51,7 @@ order: 4
         vec4 camSpacePosition = uMVMatrix * vec4(aVertexPosition, 1.0);
         vPosition = vec3(camSpacePosition);
 
-        gl_Position = uPMatrix * camSpacePosition;        
+        gl_Position = uPMatrix * camSpacePosition;
 
         vec4 camSpaceNormal = uNMatrix * vec4(aVertexNormal, 0.0);
         vNormal = vec3(camSpaceNormal);
@@ -70,8 +69,6 @@ order: 4
     varying vec3 vNormal;               // Fragment normal (camera space)
     varying vec3 vColor;
     varying float vAlpha;
-
-  
 
     void main(void) {
         vec3 vLight = uLightPos - vPosition;
