@@ -180,7 +180,7 @@ float D_GGX(float roughness, float NoH, const vec3 n, const vec3 h) {
 
 #### G 几何阴影（Geometric Shadowing）
 
-根据* Heitz 2014, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"*，使用的 Smith 几何阴影公式如下：
+根据 *Heitz 2014, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"*，Filament 使用的 Smith 几何阴影公式如下：
 
 $$\begin{equation}
 G(v,l,\alpha) = G_1(l,\alpha) G_1(v,\alpha)
@@ -446,7 +446,7 @@ _仅考虑了单次散射的金属材质_
 ![](material_metallic_energy_preservation.png)
 _考虑了多重散射的金属材质_
 
-### 参数化
+### 参数
 
 [**迪士尼的材质模型**](https://media.disneyanimation.com/uploads/production/publication_asset/48/asset/s2012_pbs_disney_brdf_notes_v3.pdf) 包含* baseColor*、*subsurface*、*metallic*、*specular*、*specularTint*、*roughness*、*anisotropic*、*sheen*、*sheenTint*、*clearcoat*、*clearcoatGloss *共 11 项，考虑到实时渲染的性能要求以及方便美术同学和开发同学使用，因此，Filament 使用了简化模型。
 
@@ -489,9 +489,9 @@ vec3 diffuseColor = (1.0 - metallic) * baseColor.rgb;
 
 #### Roughness
 
-在 Filament 中，使用者所指定的粗糙度叫做`perceptualRoughness`是一种直观的、经验性的值，这种粗糙度会使用下面公式映射到线性空间，
+在 Filament 中，使用者所指定的粗糙度叫做`perceptualRoughness` 感知粗糙度，是一种直观的、经验性的值，这种粗糙度会使用下面公式映射到线性空间，
 
-$\alpha = perceptualRoughness^2 $ 
+$\alpha = perceptualRoughness^2 $
 
 ![](material_roughness_remap.png)
 _感知线性粗糙度 (PerceptualRoughness，上）和重映射的粗糙度（$\alpha$，下）_
@@ -558,40 +558,195 @@ f_0 = {baseColor}* {metallic}
 \end{equation}$$
 
 对于电介质和金属材质而言，Filament 使用下面的方法计算 $f_0$:
+
 ```c
 vec3 f0 = 0.16 * reflectance * reflectance * (1.0 - metallic) + baseColor * metallic;
 ```
+
 ### 材质参考
 
 Filament 提供了一个[**材质制作参考**](https://google.github.io/filament/Material%20Properties.pdf)，帮助使用者制作自己的 PBR 材质。
 
-对全体材质
-: BaseColor 应该没有除微表面的遮挡外的一切光照信息。
+对普通材质
+: *BaseColor* 应该没有除微表面的遮挡外的一切光照信息。*金属度*为非 0 即 1 的值，纯导体为 1，纯电介质为 0，因此对于这两类材质的金属度应该为接近 0 或 1的值，中间值应用于表面类型的过渡，如金属到铁锈。
 
-    金属度为非 0 即 1 的值，纯导体为 1，纯电介质为 0，因此对于这两类材质的金属度应该为接近 0 或 1的值，中间值应用于表面类型的过渡，如金属到铁锈。
- 
 对非金属材质
-: BaseColor 代表的是反射的颜色，应为 sRGB 50~ 240 或 sRGB 30~ 240
-
-    金属度应该为 0 或者接近 0 的值。反射率如果找不到合适的值，可以为 sRGB 127 (Linear 0.5， Reflectance 4%)
-
-    反射率不宜小于 sRGB 90（Linear 0.33，Reflectance 2%）
+: *BaseColor* 代表的是反射的颜色，应为 *sRGB 50~ 240* 或 *sRGB 30~ 240*。*金属度*应该为 0 或者接近 0 的值。反射率如果找不到合适的值，可以为 *sRGB 127 (Linear 0.5， Reflectance 4%)*。*反射率*不宜小于 *sRGB 90（Linear 0.33，Reflectance 2%）*
 
 对金属材质
-: BaseColor 代表高光和反射的颜色，亮度应在 67%~ 100% (sRGB 170~ 255)，被氧化过或者更脏的金属可以考虑使用更低的值。
+: *BaseColor* 代表高光和反射的颜色，亮度应在 *67%~ 100% (sRGB 170~ 255)*，被氧化过或者更脏的金属可以考虑使用更低的值。*金属度*为 1 或者接近 1 的值。*反射率*可以被忽略，或由 BaseColor 计算而来。
 
-    金属度为 1 或者接近 1 的值。
-    
-    反射率可以被忽略，或由 BaseColor 计算而来。
+### 透明涂层（Clear coat）模型
 
+这里把具有各向同性的单层材质称为**标准材质**，而标准材质上具有半透明薄膜涂层的，比如汽车油漆，漆木这类多层材料被称为**透明涂层材质(Clear coat)**
 
-### 透明涂层模型
+![标准材料模型（左）和透明涂层模型（右）的比较](material_clear_coat.png)
 
+由上面的介绍可以看出，Clear coat 材质具有两层表面，其中标准材质层称为 *Base layer*，透明涂层称作 *Clear coat layer*，透明涂层是具有各向同性的电介质，标准材质层可以是任何层（电介质或导体）。Clear coat 材质的基本模型如下：
 
+![Clear coat 模型](diagram_clear_coat.png)
+
+实时渲染领域，不会模拟涂层间的反射和折射行为，入射光将穿过透明涂层，因此也会存在能量损失。
+
+#### Clear Coat Specular BRDF
+
+Clear coat 也会使用标准模型中同样的 Cook-Torrance 微表面 BRDF 进行建模。由于透明涂层是具有各向同性的电介质，具有较低的粗糙度，因此可以选择比较简单的 D，F，G。
+
+在[这篇论文](https://www.researchgate.net/publication/2378872_A_Microfacet_Based_Coupled_Specular-Matte_BRDF_Model_with_Importance_Sampling)中描述了一种基于重要性采样的可以取代 SmithGGX 的几何阴影函数。
+
+$$\begin{equation}
+V(l,h) = \frac{1}{4({l}\cdot{h})^2}
+\end{equation}$$
+
+这个函数所描绘的 Mask Shadow 并不是基于物理的，但它足够简单，适合实时渲染。GLSL 中的实现也非常简单：
+
+```glsl
+float V_Kelemen(float LoH) {
+    return 0.25 / (LoH * LoH);
+}
+```
+
+#### 关于 Fresnel 项
+
+Specular BRDF 需要法向的反射率 $f_0$，这里假定涂层的主要成分是聚氨酯，一种涂料和清漆中常见的化合物，在*空气-聚氨酯*的 IOR 为 1.5，因此可以参考上面提到的公式计算 $f_0$：
+
+$$\begin{equation}
+f_0 = \frac{(1.5 - 1)^2}{(1.5 + 1)^2} = 0.04
+\end{equation}$$
+
+由于透明涂层的存在，必须考虑能量的损耗，
+
+$$\begin{equation}
+f(v,l) = f_d(v,l)(1- F_c)+f_r(v,l)(1-F_c)+f_c(v,l)
+\end{equation}$$
+
+这里，$F_c$ 是 clear coat 的 Fresnel 项，$f_c$ 是 clear coat BRDF。
+
+#### 参数
+
+除了标准模型的 6 个参数（BaseColor, Roughness,Metallic,Reflectance，Emissive，Ambient occlusion）外，clear coat 添加了另外两个参数，
+
+| 参数 | 定义 |
+|:-----|:------|
+| ClearCoat | 透明涂层的强度，介于 0 到 1 之间。|
+| ClearCoatRoughness | 非物理真实的感知粗糙度，介于 0 到 1 之间。|
+
+*ClearCoatRoughness* 是重新映射的值，映射方法、clamp 的值域与标准模型的粗糙度一样，以开平方的方式再映射到线性空间。
+
+![ClearCoat](material_clear_coat1.png)
+_ClearCoat 从 0 到 1 的变化，金属度 1.0，粗糙度 0.8_
+
+![ClearCoatRoughness](material_clear_coat2.png)
+_ClearCoatRoughness 从 0 到 1 的变化，金属度 1.0，粗糙度 0.8，ClearCoat 1.0_
+
+完成了再映射和参数化的、集成了 clear coat BRDF 的 GLSL 实现：
+
+```glsl
+void BRDF(...) 
+{
+    // compute Fd and Fr from standard model
+
+    // remapping and linearization of clear coat roughness
+    clearCoatPerceptualRoughness = clamp(clearCoatPerceptualRoughness, 0.089, 1.0);
+    clearCoatRoughness = clearCoatPerceptualRoughness * clearCoatPerceptualRoughness;
+
+    // clear coat BRDF
+    float  Dc = D_GGX(clearCoatRoughness, NoH);
+    float  Vc = V_Kelemen(clearCoatRoughness, LoH);
+    float  Fc = F_Schlick(0.04, LoH) * clearCoat; // clear coat strength
+    float Frc = (Dc * Vc) * Fc;
+
+    // account for energy loss in the base layer
+    return color * ((Fd + Fr * (1.0 - Fc)) * (1.0 - Fc) + Frc);
+}
+```
+
+#### 标准材质层
+
+涂层的存在使得反射的 $f_0$ 需要重新计算，因为原先的 $f_0$ 是基于*空气-材质*层的，而标准材质层需要计算的是*材质-涂层*这一层。我们可以用 $f_0$ 表示材质的折射率 $IOR_{base}$ 从而获得涂层的 $f_{0base}$。
+
+首先计算标准材质层的 IOR:
+
+$$\begin{equation}
+IOR_{base} = \frac{1+\sqrt{f_0}}{1-\sqrt{f_0}}
+\end{equation}$$
+
+然后计算标准材质层的 $f_{0base}$，其中 1.5 是涂层的折射率，
+
+$$\begin{equation}
+f_{0base} = (\frac{IOR_{base}-1.5}{IOR_{base}+1.5})^2
+\end{equation}$$
+
+涂层层的折射率是固定的，可以将上述的两个方程联立以简化：
+
+$$\begin{equation}
+f_{0base} = \frac{(1-5\sqrt{f_0})^2}{(5-\sqrt{f_0})^2}
+\end{equation}$$
+
+如果需要进一步的优化 clear coat 模型，可以将标准材质层的粗糙度从 ClearCoatRoughness 中分离出来。
 
 ### 各向异性模型
 
-### 次表面散射模型
+上面所描述的材质模型均是针对各项同性表面，即表面各个方向的属性是一样的。但是像是拉丝金属这类材质，需要用各向异性模型进行表达：
+
+![各向异性](material_anisotropic.png)
+_各向同性 vs 各向异性_
+
+#### 各项异性 specular BRDF
+
+可以通过将描述各向同性的标准材质模型的 specular BRDF 的粗糙度分解为**切线方向的粗糙度 $\alpha_{t}$** 和**副切线方向的粗糙度 $\alpha_{b}$**，从而获得各向异性材质的 NDF
+
+$$\begin{equation}
+D_{aniso}(h,\alpha) = \frac{1}{\pi\alpha_{t}\alpha_{b}} \frac{1}{(( \frac{t \cdot h}{\alpha_{t}})^2 + ( \frac{b \cdot h}{\alpha_{b}})^2 +(n \cdot h)^2)^2}
+\end{equation}$$
+
+但是这个 NDF 会引入两个额外参数。[**Neubelt13**](https://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_slides.pdf) 提出引入 anisotropy 参数，用该参数来表示 $\alpha_{t}$ 和 $\alpha_{b}$，
+
+$$
+\begin{align*}
+  \alpha_t &= \alpha \\
+  \alpha_b &= lerp(0, \alpha, 1 - anisotropy)
+\end{align*}
+$$
+
+[**迪士尼的模型**](https://media.disneyanimation.com/uploads/production/publication_asset/48/asset/s2012_pbs_disney_brdf_notes_v3.pdf)中定义的各向异性有较好的视觉效果，但也更为昂贵：
+
+$$
+\begin{align*}
+  \alpha_t &= \frac{\alpha}{\sqrt{1 - 0.9 \times anisotropy}} \\
+  \alpha_b &= \alpha \sqrt{1 - 0.9 \times anisotropy}
+\end{align*}
+$$
+
+Filament 没有使用上面二者，而是选择了高光更为锐利的 [**Kulla17**](https://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_slides_v2.pdf):
+
+$$
+\begin{align*}
+  \alpha_t &= \alpha \times (1 + anisotropy) \\
+  \alpha_b &= \alpha \times (1 - anisotropy)
+\end{align*}
+$$
+
+由于法线贴图本身就需要切线和副切线数据，因此这两个参数可以很方便的获得到，下面是最终的实现：
+
+```glsl
+float at = max(roughness * (1.0 + anisotropy), 0.001);
+float ab = max(roughness * (1.0 - anisotropy), 0.001);
+
+float D_GGX_Anisotropic(float NoH, const vec3 h,
+        const vec3 t, const vec3 b, float at, float ab) {
+    float ToH = dot(t, h);
+    float BoH = dot(b, h);
+    float a2 = at * ab;
+    highp vec3 v = vec3(ab * ToH, at * BoH, a2 * NoH);
+    highp float v2 = dot(v, v);
+    float w2 = a2 / v2;
+    return a2 * w2 * w2 * (1.0 / PI);
+}
+```
+
+#### 参数
+
 
 ### 布料模型
 
