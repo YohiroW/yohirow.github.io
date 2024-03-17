@@ -6,29 +6,27 @@ order: 4
 
 ---
 
-<head>
-<meta charset="utf-8">
 <link href="/assets/css/proj3.css" rel="stylesheet">
 
 <!-- Useful 3rd party libraries -->
-<script type="text/javascript" src="/assets/js/jquery-1.12.2.min.js"></script>
-<script type="text/javascript" src="/assets/js/glMatrix-0.9.5.js"></script>
+<script src="/assets/js/jquery-1.12.2.min.js"></script>
+<script src="/assets/js/glMatrix-0.9.5.js"></script>
 
 <!-- Shader initialization utils -->
-<script type="text/javascript" src="/assets/js/shader-utils.js"></script>
+<script src="/assets/js/shader-utils.js"></script>
 
 <!-- WebGL debugging utils -->
-<script type="text/javascript" src="/assets/js/webgl-debug.js"></script>
-<script type="text/javascript" src="/assets/js/debug-utils.js"></script>
+<script src="/assets/js/webgl-debug.js"></script>
+<script src="/assets/js/debug-utils.js"></script>
 
 <!-- Simulation-related functions -->
-<script type="text/javascript" src="/assets/proj3_sim.js"></script>
+<script src="/assets/proj3_sim.js"></script>
 
 <!-- WebGL functions -->
-<script type="text/javascript" src="/assets/proj3_webgl.js"></script>
+<script src="/assets/proj3_webgl.js"></script>
 
 <!-- Other javascript functions -->
-<script type="text/javascript" src="/assets/proj3.js"></script>
+<script src="/assets/proj3.js"></script>
 
 <!-- Vertex shader -->
 <script id="shader-vs" type="x-shader/x-vertex">
@@ -90,203 +88,198 @@ order: 4
         gl_FragColor = vec4(I, 1.0*vAlpha);
     }
 </script>
-</head>
 
 
 <!-- HTML contents -->
-<body>
-
-    <div style="margin-top:10px; float:left">
-        <canvas id="canvas0" style="border:none;" width="600" height="800"></canvas>
-    </div>
-    <div style="margin-left:10px; float:left">
-        <div class="panel">
-            <p>Rendering Control</p>
-            <table>
-                <tr>
-                    <td width="200px">Resolution</td>
-                    <td width="230px">
-                        <select onchange="changeResolution(this);">
-                            <option value="0">480x640</option>
-                            <option value="1" selected="selected">600x800</option>
-                            <option value="2">720x960</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Drawing Mode</td>
-                    <td>
-                        <select onchange="changeMode(this.value);">
-                            <option value="0" selected="selected">Normal</option>
-                            <option value="1">Wire-frame</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>Camera Depth</td>
-                    <td>
-                        <input type="range" min="-60" max="-1" value="-10" onchange="updateSliderCameraDepth(this.value);">
-                        (<span id="sliderAmountCameraDepth">-10</span>)
-                    </td>
-                </tr> 
-                <tr>
-                    <td><input type="checkbox" onchange="changeRotatingState(this.checked);">Rotating object</td>
-                    <td>
-                        <input id="sliderBar" type="range" min="1" max="36" value="6" onchange="updateSlider(this.value);" disabled>
-                        (<span id="sliderAmount">60</span>&deg;/s)
-                    </td>
-                </tr>        
-                <tr>
-                    <td><input type="checkbox" onchange="changeAnimatedLightState(this.checked);">Rotating light</td>
-                    <td>
-                        <input id="sliderBarLight" type="range" min="1" max="36" value="6" onchange="updateSliderLight(this.value);" disabled>
-                        (<span id="sliderAmountLight">60</span>&deg;/s)
-                    </td>
-                </tr>
-            </table>
-        </div>
-        <div style="clear:left"></div>
-        <div class="panel">
-            <p>Animation Control</p>
-            <table>
-                <tr>
-                    <td width="200px">Mesh Resolution</td>
-                    <td width="230px">
-                        <select onchange="changeMeshResolution(this.value);">
-                            <option value="1">15x15</option>
-                            <option value="2" selected="selected">25x25</option>
-                            <option value="3">35x35</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <input type="checkbox" onchange="changeAnimatedState(this.checked);" checked>Animated
-                    </td>
-                    <td>
-                        <button type="botton" onclick="resetMesh();">Restart</button>
-                        &nbsp;
-                        <button type="botton" onclick="window.location.reload();">Reset parameters</button>
-                    </td>                
-                </tr>
-                <tr>
-                    <td>Particle Mass</td>
-                    <td>
-                        <input type="range" min="1" max="50" value="10" onchange="updateSliderMass(this.value);">
-                        (<span id="sliderAmountMass">1.0</span>)
-                    </td>
-                </tr>             
-                <tr>
-                    <td>Structural Stiffness</td>
-                    <td>
-                        <input type="range" min="1" max="50" value="25" onchange="updateSliderK0(this.value);">
-                        (<span id="sliderAmountK0">25</span>&times;10<sup>3</sup>)
-                    </td>
-                </tr>
-                <tr>
-                    <td>Shear Stiffness</td>
-                    <td>
-                        <input type="range" min="1" max="50" value="25" onchange="updateSliderK1(this.value);">
-                        (<span id="sliderAmountK1">25</span>&times;10<sup>3</sup>)
-                    </td>
-                </tr>
-                <tr>
-                    <td>Bend Stiffness</td>
-                    <td>
-                        <input type="range" min="1" max="50" value="25" onchange="updateSliderK2(this.value);">
-                        (<span id="sliderAmountK2">25</span>&times;10<sup>3</sup>)
-                    </td>
-                </tr>
-                <tr>
-                    <td>Damping</td>
-                    <td>
-                        <input type="range" min="0" max="10" value="5" onchange="updateSliderCd(this.value);">
-                        (<span id="sliderAmountCd">0.5</span>)
-                    </td>
-                </tr>
-                <tr>
-                    <td>Viscous</td>
-                    <td>
-                        <input type="range" min="0" max="20" value="5" onchange="updateSliderCv(this.value);">
-                        (<span id="sliderAmountCv">0.5</span>)
-                    </td>
-                </tr>    
-				<tr>
-                    <td>Wind Velocity</td>
-                    <td>
-                        <input type="range" min="0" max="50" value="15" onchange="updateSliderWind(this.value);">
-                        (<span id="sliderAmountWind">15</span>)
-                    </td>
-                </tr>  
-				<tr>
-                    <td>Wind Angle</td>
-                    <td>
-                        <input type="range" min="0" max="360" value="0" onchange="updateSliderWindangle(this.value);">
-                        (<span id="sliderAmountWindangle">0</span>)
-                    </td>
-                </tr>
-				<tr>
-                    <td>Ball X</td>
-                    <td>
-                        <input type="range" min="-25" max="25" value="0" onchange="updateSliderBallX(this.value);">
-                        (<span id="sliderAmountBallX">0</span>)
-                    </td>
-                </tr>
-				<tr>
-                    <td>Ball Y</td>
-                    <td>
-                        <input type="range" min="-25" max="25" value="0" onchange="updateSliderBallY(this.value);">
-                        (<span id="sliderAmountBallY">0</span>)
-                    </td>
-                </tr>
-				
-				<tr>
-                    <td>Ball Z</td>
-                    <td>
-                        <input type="range" min="-25" max="25" value="0" onchange="updateSliderBallZ(this.value);">
-                        (<span id="sliderAmountBallZ">0</span>)
-                    </td>
-                </tr>
-				<tr>
-                    <td>Ball Radius</td>
-                    <td>
-                        <input type="range" min="4" max="10" value="4" onchange="updateSliderBallR(this.value);">
-                        (<span id="sliderAmountBallR">4</span>)
-                    </td>
-                </tr>
-                <tr>
-                    <td>Burning Speed</td>
-                    <td>
-                        <input type="range" min="1.0" max="50.0" value="20.0" onchange="updateSliderBurningSpeed(this.value);">
-                        (<span id="sliderAmountBurningSpeed">20.0</span>)
-                    </td>
-                </tr>
-                <tr>
-                    <td>Raining Frequency</td>
-                    <td>
-                        <input type="range" min="10.0" max="70.0" value="30.0" onchange="updateSliderRainingSpeed(this.value);">
-                        (<span id="sliderAmountRainingSpeed">30.0</span>)
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <input name="mode" type="radio" id="burn" value="burn"> Burn Mode<br>
-                    </td>
-                    <td>
-                        <input name="burnstart" id="topleft" type="radio" value="topleft"> Top Left
-                        <input name="burnstart" id="bottomleft" type="radio" value="bottomleft" checked="checked"> Bottom Left<br>
-                        <input name="burnstart" id="topright" type="radio" value="topright"> Top Right 
-                        <input name="burnstart" id="bottomright" type="radio" value="bottomright"> Bottom Right <br>
-                        <input name="burnstart" id="center" type="radio" value="center">    Center
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <input name="mode" type="radio" id="raindrop" value="raindrop" unchecked /> Rain Mode<br>
-                    </td>
-                </tr>
-            </table>
-        </div>
+<div style="margin-top:10px; float:left">
+    <canvas id="canvas0" style="border:none;" width="600" height="800"></canvas>
+</div>
+<div style="margin-left:10px; float:left">
+    <div class="panel">
+        <p>Rendering Control</p>
+        <table>
+            <tr>
+                <td width="200px">Resolution</td>
+                <td width="230px">
+                    <select onchange="changeResolution(this);">
+                        <option value="0">480x640</option>
+                        <option value="1" selected="selected">600x800</option>
+                        <option value="2">720x960</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>Drawing Mode</td>
+                <td>
+                    <select onchange="changeMode(this.value);">
+                        <option value="0" selected="selected">Normal</option>
+                        <option value="1">Wire-frame</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>Camera Depth</td>
+                <td>
+                    <input type="range" min="-60" max="-1" value="-10" onchange="updateSliderCameraDepth(this.value);">
+                    (<span id="sliderAmountCameraDepth">-10</span>)
+                </td>
+            </tr> 
+            <tr>
+                <td><input type="checkbox" onchange="changeRotatingState(this.checked);">Rotating object</td>
+                <td>
+                    <input id="sliderBar" type="range" min="1" max="36" value="6" onchange="updateSlider(this.value);" disabled>
+                    (<span id="sliderAmount">60</span>&deg;/s)
+                </td>
+            </tr>        
+            <tr>
+                <td><input type="checkbox" onchange="changeAnimatedLightState(this.checked);">Rotating light</td>
+                <td>
+                    <input id="sliderBarLight" type="range" min="1" max="36" value="6" onchange="updateSliderLight(this.value);" disabled>
+                    (<span id="sliderAmountLight">60</span>&deg;/s)
+                </td>
+            </tr>
+        </table>
     </div>
     <div style="clear:left"></div>
-</body>
+    <div class="panel">
+        <p>Animation Control</p>
+        <table>
+            <tr>
+                <td width="200px">Mesh Resolution</td>
+                <td width="230px">
+                    <select onchange="changeMeshResolution(this.value);">
+                        <option value="1">15x15</option>
+                        <option value="2" selected="selected">25x25</option>
+                        <option value="3">35x35</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input type="checkbox" onchange="changeAnimatedState(this.checked);" checked>Animated
+                </td>
+                <td>
+                    <button type="botton" onclick="resetMesh();">Restart</button>
+                    &nbsp;
+                    <button type="botton" onclick="window.location.reload();">Reset parameters</button>
+                </td>                
+            </tr>
+            <tr>
+                <td>Particle Mass</td>
+                <td>
+                    <input type="range" min="1" max="50" value="10" onchange="updateSliderMass(this.value);">
+                    (<span id="sliderAmountMass">1.0</span>)
+                </td>
+            </tr>             
+            <tr>
+                <td>Structural Stiffness</td>
+                <td>
+                    <input type="range" min="1" max="50" value="25" onchange="updateSliderK0(this.value);">
+                    (<span id="sliderAmountK0">25</span>&times;10<sup>3</sup>)
+                </td>
+            </tr>
+            <tr>
+                <td>Shear Stiffness</td>
+                <td>
+                    <input type="range" min="1" max="50" value="25" onchange="updateSliderK1(this.value);">
+                    (<span id="sliderAmountK1">25</span>&times;10<sup>3</sup>)
+                </td>
+            </tr>
+            <tr>
+                <td>Bend Stiffness</td>
+                <td>
+                    <input type="range" min="1" max="50" value="25" onchange="updateSliderK2(this.value);">
+                    (<span id="sliderAmountK2">25</span>&times;10<sup>3</sup>)
+                </td>
+            </tr>
+            <tr>
+                <td>Damping</td>
+                <td>
+                    <input type="range" min="0" max="10" value="5" onchange="updateSliderCd(this.value);">
+                    (<span id="sliderAmountCd">0.5</span>)
+                </td>
+            </tr>
+            <tr>
+                <td>Viscous</td>
+                <td>
+                    <input type="range" min="0" max="20" value="5" onchange="updateSliderCv(this.value);">
+                    (<span id="sliderAmountCv">0.5</span>)
+                </td>
+            </tr>    
+            <tr>
+                <td>Wind Velocity</td>
+                <td>
+                    <input type="range" min="0" max="50" value="15" onchange="updateSliderWind(this.value);">
+                    (<span id="sliderAmountWind">15</span>)
+                </td>
+            </tr>  
+            <tr>
+                <td>Wind Angle</td>
+                <td>
+                    <input type="range" min="0" max="360" value="0" onchange="updateSliderWindangle(this.value);">
+                    (<span id="sliderAmountWindangle">0</span>)
+                </td>
+            </tr>
+            <tr>
+                <td>Ball X</td>
+                <td>
+                    <input type="range" min="-25" max="25" value="0" onchange="updateSliderBallX(this.value);">
+                    (<span id="sliderAmountBallX">0</span>)
+                </td>
+            </tr>
+            <tr>
+                <td>Ball Y</td>
+                <td>
+                    <input type="range" min="-25" max="25" value="0" onchange="updateSliderBallY(this.value);">
+                    (<span id="sliderAmountBallY">0</span>)
+                </td>
+            </tr>
+            <tr>
+                <td>Ball Z</td>
+                <td>
+                    <input type="range" min="-25" max="25" value="0" onchange="updateSliderBallZ(this.value);">
+                    (<span id="sliderAmountBallZ">0</span>)
+                </td>
+            </tr>
+            <tr>
+                <td>Ball Radius</td>
+                <td>
+                    <input type="range" min="4" max="10" value="4" onchange="updateSliderBallR(this.value);">
+                    (<span id="sliderAmountBallR">4</span>)
+                </td>
+            </tr>
+            <tr>
+                <td>Burning Speed</td>
+                <td>
+                    <input type="range" min="1.0" max="50.0" value="20.0" onchange="updateSliderBurningSpeed(this.value);">
+                    (<span id="sliderAmountBurningSpeed">20.0</span>)
+                </td>
+            </tr>
+            <tr>
+                <td>Raining Frequency</td>
+                <td>
+                    <input type="range" min="10.0" max="70.0" value="30.0" onchange="updateSliderRainingSpeed(this.value);">
+                    (<span id="sliderAmountRainingSpeed">30.0</span>)
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input name="mode" type="radio" id="burn" value="burn"> Burn Mode<br>
+                </td>
+                <td>
+                    <input name="burnstart" id="topleft" type="radio" value="topleft"> Top Left
+                    <input name="burnstart" id="bottomleft" type="radio" value="bottomleft" checked="checked"> Bottom Left<br>
+                    <input name="burnstart" id="topright" type="radio" value="topright"> Top Right 
+                    <input name="burnstart" id="bottomright" type="radio" value="bottomright"> Bottom Right <br>
+                    <input name="burnstart" id="center" type="radio" value="center">    Center
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <input name="mode" type="radio" id="raindrop" value="raindrop" unchecked /> Rain Mode<br>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div style="clear:left"></div>
