@@ -79,10 +79,10 @@ $$f(v,l)=f_d(v,l)+f_r(v,l)$$
 _微表面模型的粗糙表面和光滑表面_
 
 在微表面，法线 N 位于入射光和观察方向之间的半角方向时会反射可见光。
-![microsurface](diagram_macrosurface.png){: .w-50 }
+![microsurface](diagram_macrosurface.png)
 
 但是也并非所有符合上面条件的法线会贡献反射，因为微表面 BRDF 会考虑材质表面的遮蔽而产生的自阴影。
-![shadow masking](diagram_shadowing_masking.png){: .w-50 }
+![shadow masking](diagram_shadowing_masking.png)
 
 粗糙度高的材质，表面朝向相机的面越少，表现为越模糊，因为入射光的能量被分散了。
 ![roughness](diagram_roughness.png)
@@ -106,12 +106,12 @@ Filament 里对材质属性引入了两个概念：*电介质*和*导体*。
 入射光照射到 BRDF 模拟的材质表面后，光被分解为漫反射和镜面反射两个分量，这是一种简化的模型。
 
 实际上，会有入射光穿透表面，在材质内部进行散射，最后再以漫反射的形式离开表面：
-![](diagram_scattering.png){: .w-75 }
+![](diagram_scattering.png)
 _漫反射的散射_
 
 这就是电介质和导体的区别。导体不会产生次表面散射，散射发生在电介质当中。
 
-![](diagram_brdf_dielectric_conductor.png){: .w-75 }
+![](diagram_brdf_dielectric_conductor.png)
 _电介质和导体表面的 BRDF 模型_
 
 ### Specular BRDF
@@ -747,8 +747,148 @@ float D_GGX_Anisotropic(float NoH, const vec3 h,
 
 #### 参数
 
+各向异性材质模型在标准材质的基础上多出了一项各向异性系数 **Anisotropy**，该参数为 -1 到 1 的标量，负值表示向副切线方向对齐，正值表示向切线方向对齐。
+
+![](anisotropy.png)
+_Anisotropy 从零到一的变化_
 
 ### 布料模型
 
+衣服、织物的布料通常由松散连接的丝线构成，这类材质会吸收和散射入射光。而微表面的 BRDF 模型假定材质表面有随机凹槽构成，在宏观上近似光滑平面，这导致微表面 BRDF 模型不太适合重建布料这种存在散射的材质。
+
+![](screenshot_cloth.png)
+_传统微表面 BRDF 模型下的布料（左）与 Filament 中的布料（右）_
+
+像天鹅绒这类材质，由于布料表面直立的纤维会产生前向和后向的散射。前向散射指的是，入射光来自于观察向量的反方向的散射。而后向散射指的就是，入射光来自于观察向量相同方向的散射。
+
+其他类型的布料，如皮革、丝绸等，更适合使用硬表面的材质模型，如标准模型或是各向异性模型。
+
+#### 布料的 Specular BRDF
+
+Filament 使用的布料 BRDF 是经过修改的微表面 BRDF。而在 BRDF 的各项中，分布函数项（NDF）对 BRDF 的贡献最大[^Ashikhmin07]。该分布项是逆高斯分布，有助于实现前向/后向散射的模糊照明，并在此基础上添加模拟镜面反射的偏移。描述天鹅绒材质的 NDF 描述如下：
+
+$$\begin{equation}
+D_{velvet}(v,h,\alpha) = c_{norm}(1 + 4 exp\left(\frac{-{cot}^2\theta_{h}}{\alpha ^2}\right))
+\end{equation}$$
+
+该 NDF 是 [Ashikhmin00](https://www.semanticscholar.org/paper/Distribution-based-BRDFs-Ashikhmin-Premoze/c54e98f379334f881389962c8598148389db5c40) 中的变体，该 NDF 也有标准化的版本[^Neubelt13]：
+
+$$\begin{equation}
+D_{velvet}(v,h,\alpha) = \frac{1}{\pi(1 + 4\alpha^2)}(1 + 4 \frac{exp\left(\frac{-{cot}^2\theta_{h}}{\alpha^2}\right)}{\sin^4{\theta_{h}}})
+\end{equation}$$
+
+标准化的等式中，分母可以进一步平滑为：
+
+$$\begin{equation}
+f_{r}(v,h,\alpha) = \frac{D_{velvet}(v,h,\alpha)}{4(n \cdot l + n \cdot l - (n \cdot l)(n \cdot v))}
+\end{equation}$$
+
+GLSL 的实现如下，适配了半浮点数并避免了余切的计算，用三角函数恒等式替换，且在该 BRDF 中删去了 Fresnel 项：
+
+```glsl
+float D_Ashikhmin(float roughness, float NoH) 
+{
+    // Ashikhmin 2007, "Distribution-based BRDFs"
+    float a2 = roughness * roughness;
+    float cos2h = NoH * NoH;
+    float sin2h = max(1.0 - cos2h, 0.0078125); // 2^(-14/2), so sin2h^2 > 0 in fp16
+    float sin4h = sin2h * sin2h;
+    float cot2 = -cos2h / (a2 * sin2h);
+    return 1.0 / (PI * (4.0 * a2 + 1.0) * sin4h) * (4.0 * exp(cot2) + sin4h);
+}
+```
+
+此外还有一种 NDF 的实现[^Estevez17]，不同于前者使用了逆高斯分布的 NDF，该分布以正弦函数的指数为基础，它的参数表达更为自然直观，效果更加柔和，被称为*Charlie Sheen*。
+
+$$\begin{equation}
+D(m) = \frac{(2+\frac{1}{\alpha})\sin(\theta)^\frac{1}{\alpha}}{2\pi}
+\end{equation}$$
+
+Filament 中的优化实现如下：
+
+```glsl
+float D_Charlie(float roughness, float NoH) 
+{
+    // Estevez and Kulla 2017, "Production Friendly Microfacet Sheen BRDF"
+    float invAlpha  = 1.0 / roughness;
+    float cos2h = NoH * NoH;
+    float sin2h = max(1.0 - cos2h, 0.0078125); // 2^(-14/2), so sin2h^2 > 0 in fp16
+    return (2.0 + invAlpha) * pow(sin2h, invAlpha * 0.5) / (2.0 * PI);
+}
+```
+
+#### 光泽颜色
+
+为使美术更好控制布料材质的外观，引入了直接修改镜面反射率的**光泽颜色（Sheen Color）**：
+
+![](screenshot_cloth_sheen.png)
+_无光泽（左） vs 有光泽（右）_
+
+#### 布料的 Diffuse BRDF
+
+Filament 中的布料材质模型的漫反射项依然依赖于 Lambertian Diffuse BRDF，在布料的 diffuse BRDF 中，它被修改为能量守恒且可以提供此表面散射的，虽然这些修改并不是基于严谨的物理真实的效果修改的，但是可以在一定程度上模拟光线在布料表面的散射和吸收。
+
+没有散射项的 Diffuse BRDF 项如下：
+
+$$\begin{equation}
+f_{d}(v,h) = \frac{c_{diff}}{\pi}(1 - F(v,h))
+\end{equation}$$
+
+这里的 $F(v,h)$ 是布料的 Specular BRDF 的 Fresnel 项，在实践中可以选择忽略 $1 - F(v,h)$ 这一项，Filament 文档中认为不值得为该项徒增成本。
+
+次表面散射的效果以 Wrapped lighting 的方式实现，这种方法会修改漫反射函数以使表面法线和光照方向垂直的点不全为黑，以此来提高漫反射的对比度，从而模拟光线的散射行为。Filament 中以能量守恒的形式实现：
+
+$$\begin{equation}
+f_{d}(v,h) = \frac{c_{diff}}{\pi}(1 - F(v,h)) \left< \frac{n \cdot l + w}{(1 + w)^2} \right> \left< c_{subsurface} + n \cdot l \right>
+\end{equation}$$
+
+这里的 $w$ 即是描述漫反射光包裹几何体程度的值，介于 0 到 1 之间。为避免引入额外参数，Filament 将其固定为 $w$ = 0.5。Filament 里还提到一点，**漫反射项不能乘以 $n \cdot l$**，我的猜测是因为 Wrapped lighting 模拟了表面的漫反射后，光线的强度**不再**与表面法线和光照方向的夹角直接关联，因此不能直接乘。
+
+![](screenshot_cloth_subsurface.png)
+_白色的布料（左）vs 具有棕色次表面散射的白色布料（右）_
+
+完整的布料 BRDF 实现如下：
+
+```glsl
+// specular BRDF
+float D = distributionCloth(roughness, NoH);
+float V = visibilityCloth(NoV, NoL);
+vec3  F = sheenColor;
+vec3 Fr = (D * V) * F;
+
+// diffuse BRDF
+float diffuse = diffuse(roughness, NoV, NoL, LoH);
+#if defined(MATERIAL_HAS_SUBSURFACE_COLOR)
+// energy conservative wrap diffuse
+diffuse *= saturate((dot(n, light.l) + 0.5) / 2.25);
+#endif
+vec3 Fd = diffuse * pixel.diffuseColor;
+
+#if defined(MATERIAL_HAS_SUBSURFACE_COLOR)
+// cheap subsurface scatter
+Fd *= saturate(subsurfaceColor + NoL);
+vec3 color = Fd + Fr * NoL;
+color *= (lightIntensity * lightAttenuation) * lightColor;
+#else
+vec3 color = Fd + Fr;
+color *= (lightIntensity * lightAttenuation * NoL) * lightColor;
+#endif
+```
+
+#### 参数
+
+布料模型不具有 *Metallic* 和 *Reflectance* 两个参数，额外添加了 *Sheen* 和 *SubsurfaceColor* 两个参数：
+
+| 参数 | 定义 |
+| SheenColor      | 用于创建双色调镜面布料的镜面高光的颜色，默认为 0.04 以匹配标准反射率 |
+| SubsurfaceColor | 通过材质散射和吸收后的漫反射颜色的色调 |
+
+创建类似天鹅绒的材质时，*BaseColor* 可以设为纯黑或其他较暗的颜色，色度应该反映在 *SheenColor* 上。而像牛仔布、棉布这类材质，*SheenColor* 就可以使用基于 *BaseColor* 的亮度。
 
 - [physically-based-shading-on-mobile](https://www.unrealengine.com/en/blog/physically-based-shading-on-mobile)
+
+- [^Ashikhmin00]: [A microfacet-based BRDF generator](https://dl.acm.org/doi/pdf/10.1145/344779.344814)
+- [^Ashikhmin07]: [Distribution-based BRDFs](https://www.semanticscholar.org/paper/Distribution-based-BRDFs-Ashikhmin-Premoze/c54e98f379334f881389962c8598148389db5c40)
+- [^Neubelt13]: [Crafting a Next-Gen Material Pipeline for The Order: 1886](https://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_notes.pdf)
+
+- [^GPUGemsSSS]: [Chapter 16. Real-Time Approximations to Subsurface Scattering](https://developer.nvidia.com/gpugems/gpugems/part-iii-materials/chapter-16-real-time-approximations-subsurface-scattering)
