@@ -44,4 +44,51 @@
   }
   
 
+/* time line css */
+
+.experience {
+
+  border-left: 3px solid #066933;
+  padding: 0 30px;
+  margin-left: 185px;
+  @media (max-width: 767px) {
+    margin-left: 0;
+    padding-right: 0;
+  }
+  .item {
+    position: relative;
+    margin-bottom: 40px;
+    // &::before {
+    //   @include round-btn(-43px, 0, 22px, 22px, #ffffff);
+    //   border: 3px solid  #066933;
+    // }
+    // &::after {
+    //   @include round-btn(-37px, 6px, 10px, 10px, #066933);
+    // }
+  }
+  .company-name {
+    color: #066933;
+  }
+  .location {
+    position: absolute;
+    right: 0;
+    top: 2px;
+    .fa {
+      margin-right: 8px;
+    }
+  }
+  .job-info {
+    position: absolute;
+    left: -185px;
+    top: 0;
+    .title {
+      color: #066933;
+    }
+    @media (max-width: 767px) {
+      position: static;
+      margin-bottom: 1rem;
+    }
+  }
+}
+
 /* append your custom style below */
