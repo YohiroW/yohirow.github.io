@@ -14,20 +14,7 @@ img_path: /assets/images/Filament/
 
 也可以搭配 [【GAMES101-现代计算机图形学入门-闫令琪】](https://www.bilibili.com/video/BV1X7411F744/?share_source=copy_web&vd_source=7a4dacf2c6974d860175d6d297f6d566) 食用，风味更佳。
 
-### 材质参考
-
-Filament 提供了一个[**材质制作参考**](https://google.github.io/filament/Material%20Properties.pdf)，帮助使用者制作自己的 PBR 材质。
-
-对普通材质
-: *BaseColor* 应该没有除微表面的遮挡外的一切光照信息。*金属度*为非 0 即 1 的值，纯导体为 1，纯电介质为 0，因此对于这两类材质的金属度应该为接近 0 或 1的值，中间值应用于表面类型的过渡，如金属到铁锈。
-
-对非金属材质
-: *BaseColor* 代表的是反射的颜色，应为 *sRGB 50~ 240* 或 *sRGB 30~ 240*。*金属度*应该为 0 或者接近 0 的值。反射率如果找不到合适的值，可以为 *sRGB 127 (Linear 0.5， Reflectance 4%)*。*反射率*不宜小于 *sRGB 90（Linear 0.33，Reflectance 2%）*
-
-对金属材质
-: *BaseColor* 代表高光和反射的颜色，亮度应在 *67%~ 100% (sRGB 170~ 255)*，被氧化过或者更脏的金属可以考虑使用更低的值。*金属度*为 1 或者接近 1 的值。*反射率*可以被忽略，或由 BaseColor 计算而来。
-
-### 透明涂层（Clear coat）模型
+## 透明涂层（Clear coat）模型
 
 这里把具有各向同性的单层材质称为**标准材质**，而标准材质上具有半透明薄膜涂层的，比如汽车油漆，漆木这类多层材料被称为**透明涂层材质(Clear coat)**
 
@@ -39,11 +26,11 @@ Filament 提供了一个[**材质制作参考**](https://google.github.io/filame
 
 实时渲染领域，不会模拟涂层间的反射和折射行为，入射光将穿过透明涂层，因此也会存在能量损失。
 
-#### Clear Coat Specular BRDF
+### Clear Coat Specular BRDF
 
 Clear coat 也会使用标准模型中同样的 Cook-Torrance 微表面 BRDF 进行建模。由于透明涂层是具有各向同性的电介质，具有较低的粗糙度，因此可以选择比较简单的 D，F，G。
 
-在[这篇论文](https://www.researchgate.net/publication/2378872_A_Microfacet_Based_Coupled_Specular-Matte_BRDF_Model_with_Importance_Sampling)中描述了一种基于重要性采样的可以取代 SmithGGX 的几何阴影函数。
+由于标准模型中使用的分布函数项以及菲涅尔项的计算已经足够简单[^Disney][^Karis13a]，所以这里仅考虑 Geomertry 项，在[这篇论文](https://www.researchgate.net/publication/2378872_A_Microfacet_Based_Coupled_Specular-Matte_BRDF_Model_with_Importance_Sampling)[^Kelemen01]中描述了一种基于重要性采样的可以取代 SmithGGX 的几何阴影函数。
 
 $$\begin{equation}
 V(l,h) = \frac{1}{4({l}\cdot{h})^2}
@@ -57,7 +44,7 @@ float V_Kelemen(float LoH) {
 }
 ```
 
-#### 关于 Fresnel 项
+### 关于 Fresnel 项
 
 Specular BRDF 需要法向的反射率 $f_0$，这里假定涂层的主要成分是聚氨酯，一种涂料和清漆中常见的化合物，在*空气-聚氨酯*的 IOR 为 1.5，因此可以参考上面提到的公式计算 $f_0$：
 
@@ -73,7 +60,7 @@ f(v,l) = f_d(v,l)(1- F_c)+f_r(v,l)(1-F_c)+f_c(v,l)
 
 这里，$F_c$ 是 clear coat 的 Fresnel 项，$f_c$ 是 clear coat BRDF。
 
-#### 参数
+### 参数
 
 除了标准模型的 6 个参数（BaseColor, Roughness,Metallic,Reflectance，Emissive，Ambient occlusion）外，clear coat 添加了另外两个参数，
 
@@ -112,7 +99,7 @@ void BRDF(...)
 }
 ```
 
-#### 标准材质层
+### 标准材质层
 
 涂层的存在使得反射的 $f_0$ 需要重新计算，因为原先的 $f_0$ 是基于*空气-材质*层的，而标准材质层需要计算的是*材质-涂层*这一层。我们可以用 $f_0$ 表示材质的折射率 $IOR_{base}$ 从而获得涂层的 $f_{0base}$。
 
@@ -136,14 +123,14 @@ f_{0base} = \frac{(1-5\sqrt{f_0})^2}{(5-\sqrt{f_0})^2}
 
 如果需要进一步的优化 clear coat 模型，可以将标准材质层的粗糙度从 ClearCoatRoughness 中分离出来。
 
-### 各向异性模型
+## 各向异性模型
 
 上面所描述的材质模型均是针对各项同性表面，即表面各个方向的属性是一样的。但是像是拉丝金属这类材质，需要用各向异性模型进行表达：
 
 ![各向异性](material_anisotropic.png)
 _各向同性 vs 各向异性_
 
-#### 各项异性 specular BRDF
+### 各项异性 specular BRDF
 
 可以通过将描述各向同性的标准材质模型的 specular BRDF 的粗糙度分解为**切线方向的粗糙度 $\alpha_{t}$** 和**副切线方向的粗糙度 $\alpha_{b}$**，从而获得各向异性材质的 NDF
 
@@ -151,7 +138,7 @@ $$\begin{equation}
 D_{aniso}(h,\alpha) = \frac{1}{\pi\alpha_{t}\alpha_{b}} \frac{1}{(( \frac{t \cdot h}{\alpha_{t}})^2 + ( \frac{b \cdot h}{\alpha_{b}})^2 +(n \cdot h)^2)^2}
 \end{equation}$$
 
-但是这个 NDF 会引入两个额外参数。[**Neubelt13**](https://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_slides.pdf) 提出引入 anisotropy 参数，用该参数来表示 $\alpha_{t}$ 和 $\alpha_{b}$，
+但是这个 NDF 会引入两个额外参数。[**Neubelt13**](https://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_slides.pdf)[^Neubelt13] 提出引入 anisotropy 参数，用该参数来表示 $\alpha_{t}$ 和 $\alpha_{b}$，
 
 $$
 \begin{align*}
@@ -160,7 +147,7 @@ $$
 \end{align*}
 $$
 
-[**迪士尼的模型**](https://media.disneyanimation.com/uploads/production/publication_asset/48/asset/s2012_pbs_disney_brdf_notes_v3.pdf)中定义的各向异性有较好的视觉效果，但也更为昂贵：
+[**迪士尼的模型**](https://media.disneyanimation.com/uploads/production/publication_asset/48/asset/s2012_pbs_disney_brdf_notes_v3.pdf)[^Disney]中定义的各向异性有较好的视觉效果，但也更为昂贵：
 
 $$
 \begin{align*}
@@ -169,7 +156,7 @@ $$
 \end{align*}
 $$
 
-Filament 没有使用上面二者，而是选择了高光更为锐利的 [**Kulla17**](https://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_slides_v2.pdf):
+Filament 没有使用上面二者，而是选择了高光更为锐利的 [**Kulla17**](https://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_slides_v2.pdf)[^Kulla17]:
 
 $$
 \begin{align*}
@@ -196,14 +183,14 @@ float D_GGX_Anisotropic(float NoH, const vec3 h,
 }
 ```
 
-#### 参数
+### 参数
 
 各向异性材质模型在标准材质的基础上多出了一项各向异性系数 **Anisotropy**，该参数为 -1 到 1 的标量，负值表示向副切线方向对齐，正值表示向切线方向对齐。
 
 ![](anisotropy.png)
 _Anisotropy 从零到一的变化_
 
-### 布料模型
+## 布料模型
 
 衣服、织物的布料通常由松散连接的丝线构成，这类材质会吸收和散射入射光。而微表面的 BRDF 模型假定材质表面有随机凹槽构成，在宏观上近似光滑平面，这导致微表面 BRDF 模型不太适合重建布料这种存在散射的材质。
 
@@ -214,7 +201,7 @@ _传统微表面 BRDF 模型下的布料（左）与 Filament 中的布料（右
 
 其他类型的布料，如皮革、丝绸等，更适合使用硬表面的材质模型，如标准模型或是各向异性模型。
 
-#### 布料的 Specular BRDF
+### 布料的 Specular BRDF
 
 Filament 使用的布料 BRDF 是经过修改的微表面 BRDF。而在 BRDF 的各项中，分布函数项（NDF）对 BRDF 的贡献最大[^Ashikhmin07]。该分布项是逆高斯分布，有助于实现前向/后向散射的模糊照明，并在此基础上添加模拟镜面反射的偏移。描述天鹅绒材质的 NDF 描述如下：
 
@@ -222,7 +209,7 @@ $$\begin{equation}
 D_{velvet}(v,h,\alpha) = c_{norm}(1 + 4 exp\left(\frac{-{cot}^2\theta_{h}}{\alpha ^2}\right))
 \end{equation}$$
 
-该 NDF 是 [Ashikhmin00](https://www.semanticscholar.org/paper/Distribution-based-BRDFs-Ashikhmin-Premoze/c54e98f379334f881389962c8598148389db5c40) 中的变体，该 NDF 也有标准化的版本[^Neubelt13]：
+该 NDF 是 [Ashikhmin00](https://www.semanticscholar.org/paper/Distribution-based-BRDFs-Ashikhmin-Premoze/c54e98f379334f881389962c8598148389db5c40)[^Ashikhmin00] 中的变体，该 NDF 也有标准化的版本[^Neubelt13]：
 
 $$\begin{equation}
 D_{velvet}(v,h,\alpha) = \frac{1}{\pi(1 + 4\alpha^2)}(1 + 4 \frac{exp\left(\frac{-{cot}^2\theta_{h}}{\alpha^2}\right)}{\sin^4{\theta_{h}}})
@@ -268,14 +255,14 @@ float D_Charlie(float roughness, float NoH)
 }
 ```
 
-#### 光泽颜色
+### 光泽颜色
 
 为使美术更好控制布料材质的外观，引入了直接修改镜面反射率的**光泽颜色（Sheen Color）**：
 
 ![](screenshot_cloth_sheen.png)
 _无光泽（左） vs 有光泽（右）_
 
-#### 布料的 Diffuse BRDF
+### 布料的 Diffuse BRDF
 
 Filament 中的布料材质模型的漫反射项依然依赖于 Lambertian Diffuse BRDF，在布料的 diffuse BRDF 中，它被修改为能量守恒且可以提供此表面散射的，虽然这些修改并不是基于严谨的物理真实的效果修改的，但是可以在一定程度上模拟光线在布料表面的散射和吸收。
 
@@ -287,7 +274,7 @@ f_{d}(v,h) = \frac{c_{diff}}{\pi}(1 - F(v,h))
 
 这里的 $F(v,h)$ 是布料的 Specular BRDF 的 Fresnel 项，在实践中可以选择忽略 $1 - F(v,h)$ 这一项，Filament 文档中认为不值得为该项徒增成本。
 
-次表面散射的效果以 Wrapped lighting 的方式实现，这种方法会修改漫反射函数以使表面法线和光照方向垂直的点不全为黑，以此来提高漫反射的对比度，从而模拟光线的散射行为。Filament 中以能量守恒的形式实现：
+次表面散射的效果以 Wrapped lighting[^GPUGemsSSS] 的方式实现，这种方法会修改漫反射函数以使表面法线和光照方向垂直的点不全为黑，以此来提高漫反射的对比度，从而模拟光线的散射行为。Filament 中以能量守恒的形式实现：
 
 $$\begin{equation}
 f_{d}(v,h) = \frac{c_{diff}}{\pi}(1 - F(v,h)) \left< \frac{n \cdot l + w}{(1 + w)^2} \right> \left< c_{subsurface} + n \cdot l \right>
@@ -326,7 +313,7 @@ color *= (lightIntensity * lightAttenuation * NoL) * lightColor;
 #endif
 ```
 
-#### 参数
+### 参数
 
 布料模型不具有 *Metallic* 和 *Reflectance* 两个参数，额外添加了 *Sheen* 和 *SubsurfaceColor* 两个参数：
 
@@ -336,10 +323,17 @@ color *= (lightIntensity * lightAttenuation * NoL) * lightColor;
 
 创建类似天鹅绒的材质时，*BaseColor* 可以设为纯黑或其他较暗的颜色，色度应该反映在 *SheenColor* 上。而像牛仔布、棉布这类材质，*SheenColor* 就可以使用基于 *BaseColor* 的亮度。
 
+## 参考
+
 - [physically-based-shading-on-mobile](https://www.unrealengine.com/en/blog/physically-based-shading-on-mobile)
 
-- [^Ashikhmin00]: [A microfacet-based BRDF generator](https://dl.acm.org/doi/pdf/10.1145/344779.344814)
-- [^Ashikhmin07]: [Distribution-based BRDFs](https://www.semanticscholar.org/paper/Distribution-based-BRDFs-Ashikhmin-Premoze/c54e98f379334f881389962c8598148389db5c40)
-- [^Neubelt13]: [Crafting a Next-Gen Material Pipeline for The Order: 1886](https://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_notes.pdf)
-
-- [^GPUGemsSSS]: [Chapter 16. Real-Time Approximations to Subsurface Scattering](https://developer.nvidia.com/gpugems/gpugems/part-iii-materials/chapter-16-real-time-approximations-subsurface-scattering)
+[^Ashikhmin00]: [A microfacet-based BRDF generator](https://dl.acm.org/doi/pdf/10.1145/344779.344814)
+[^Ashikhmin07]: [Distribution-based BRDFs](https://www.semanticscholar.org/paper/Distribution-based-BRDFs-Ashikhmin-Premoze/c54e98f379334f881389962c8598148389db5c40)
+[^Disney]: [Physically Based Shading at Disney](https://media.disneyanimation.com/uploads/production/publication_asset/48/asset/s2012_pbs_disney_brdf_notes_v3.pdf)
+[^Estevez17]: [Production Friendly Microfacet Sheen BRDF](https://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_sheen.pdf)
+[^Karis13a]: [Specular BRDF Reference](http://graphicrants.blogspot.com/2013/08/specular-brdf-reference.html)
+[^Karis13b]: [Real Shading in Unreal Engine 4](https://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf)
+[^Kelemen01]: [A Microfacet Based Coupled Specular-Matte BRDF Model with Importance Sampling](https://www.researchgate.net/publication/2378872_A_Microfacet_Based_Coupled_Specular-Matte_BRDF_Model_with_Importance_Sampling)
+[^Kulla17]: [Revisiting Physically Based Shading at Imageworks](https://blog.selfshadow.com/publications/s2017-shading-course/imageworks/s2017_pbs_imageworks_slides_v2.pdf)
+[^Neubelt13]: [Crafting a Next-Gen Material Pipeline for The Order: 1886](https://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_notes.pdf)
+[^GPUGemsSSS]: [Chapter 16. Real-Time Approximations to Subsurface Scattering](https://developer.nvidia.com/gpugems/gpugems/part-iii-materials/chapter-16-real-time-approximations-subsurface-scattering)

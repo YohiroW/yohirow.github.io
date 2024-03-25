@@ -17,6 +17,7 @@ img_path: /assets/images/Filament/
 ## 原则
 
 Filament 是用于 Android 的渲染引擎，设计原则包含以下几个方面：
+
 - 性能，关注实时渲染中移动设备的性能表现，主要目标为 OpenGL ES3.x 版本的 GPU
 - 质量，同时兼顾中低性能的 GPU
 - 易用，方便美术同学直观且快速地迭代资产，因此提供易理解地参数以及物理上合理的视觉效果
@@ -180,7 +181,7 @@ float D_GGX(float roughness, float NoH, const vec3 n, const vec3 h) {
 
 #### G 几何阴影（Geometric Shadowing）
 
-根据 *Heitz 2014, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"*，Filament 使用的 Smith 几何阴影公式如下：
+根据 *Heitz 2014, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs"*[^Heitz14]，Filament 使用的 Smith 几何阴影公式如下：
 
 $$\begin{equation}
 G(v,l,\alpha) = G_1(l,\alpha) G_1(v,\alpha)
@@ -448,11 +449,11 @@ _考虑了多重散射的金属材质_
 
 ### 参数
 
-[**迪士尼的材质模型**](https://media.disneyanimation.com/uploads/production/publication_asset/48/asset/s2012_pbs_disney_brdf_notes_v3.pdf) 包含* baseColor*、*subsurface*、*metallic*、*specular*、*specularTint*、*roughness*、*anisotropic*、*sheen*、*sheenTint*、*clearcoat*、*clearcoatGloss *共 11 项，考虑到实时渲染的性能要求以及方便美术同学和开发同学使用，因此，Filament 使用了简化模型。
+[**迪士尼的材质模型**](https://media.disneyanimation.com/uploads/production/publication_asset/48/asset/s2012_pbs_disney_brdf_notes_v3.pdf)[^Disney] 包含* baseColor*、*subsurface*、*metallic*、*specular*、*specularTint*、*roughness*、*anisotropic*、*sheen*、*sheenTint*、*clearcoat*、*clearcoatGloss *共 11 项，考虑到实时渲染的性能要求以及方便美术同学和开发同学使用，因此，Filament 使用了简化模型。
 
 | 参数              | 定义            |
 |:---------------- |:----------------|
-| BaseColor        | 非金属材质表面的漫反射 [反照率](https://zh.wikipedia.org/wiki/反照率)和金属材质表面的镜面颜色 | 
+| BaseColor        | 非金属材质表面的漫反射[反照率](https://zh.wikipedia.org/wiki/反照率)和金属材质表面的镜面颜色 |
 | Metallic         | 表面是电介质（0.0）或导体（1.0） |
 | Roughness        | 表面的粗糙度 |
 | Reflectance      | 电介质表面法向入射$f_0$时的菲涅耳反射率 |
@@ -471,11 +472,11 @@ _从上到下：不同的金属度、不同电介质粗糙度、不同的金属�
 | Emissive         | [0,1] 的 Linear RGB + 曝光补偿 |
 | Ambient Occlusion| [0,1] 的标量 |
 
-上述的类型以及范围是对 Shader 而言的，在参数到达 Shader 之前可以用* sRGB *表示，在传入 Shader 前转换到* linear space *即可。
+上述的类型以及范围是对 Shader 而言的，在参数到达 Shader 之前可以用 *sRGB* 表示，在传入 Shader 前转换到 *linear space* 即可。
 
 ### 重映射
 
-为了使美术同学更直观地使用标准材质模型，因此引入了对* baseColor*、*roughness*、*reflectance *的重映射。
+为了使美术同学更直观地使用标准材质模型，因此引入了对 *baseColor*, *roughness*, *reflectance* 的重映射。
 
 #### BaseColor
 
@@ -491,7 +492,9 @@ vec3 diffuseColor = (1.0 - metallic) * baseColor.rgb;
 
 在 Filament 中，使用者所指定的粗糙度叫做`perceptualRoughness` 感知粗糙度，是一种直观的、经验性的值，这种粗糙度会使用下面公式映射到线性空间，
 
-$\alpha = perceptualRoughness^2 $
+$$\begin{equation}
+\alpha = perceptualRoughness^2
+\end{equation}$$
 
 ![](material_roughness_remap.png)
 _感知线性粗糙度 (PerceptualRoughness，上）和重映射的粗糙度（$\alpha$，下）_
@@ -505,12 +508,12 @@ _感知线性粗糙度 (PerceptualRoughness，上）和重映射的粗糙度（$
 
 很多时候为了控制镜面高光处于一个更小的范围，Roughness 也需要 clamp 到一个安全的范围，对于较低的 Roughness 值，这种 clamp 还可以避免高光出现的锯齿。
 
-关于浮点数相关的内容可以查看[**这里**]()。
+关于游戏中浮点数相关的内容可以看一下[**这篇文章**](https://randomascii.wordpress.com/2012/09/09/game-developer-magazine-floating-point/)。
 
 #### Reflectance
 
 电介质
-: 菲涅尔项依赖于法向的镜面反射率 $f_0$ ，对于电介质材质是消色差的，可以用灰度来描述。Filament 中使用 [Moving Frostbite to PBR](https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/s2014-pbs-frostbite-slides.pdf) 中所提到的电介质表面对反射率进行重映射：
+: 菲涅尔项依赖于法向的镜面反射率 $f_0$ ，对于电介质材质是消色差的，可以用灰度来描述。Filament 中使用 [**Moving Frostbite to PBR**](https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/s2014-pbs-frostbite-slides.pdf) 中所提到的电介质表面对反射率进行重映射：
 
 $$\begin{equation}
 f_0 = 0.16 * {reflectance}^2
@@ -543,7 +546,7 @@ n_{ior} = \frac{2}{1 - \sqrt{f_0}} - 1
 | 塑料/玻璃 | 4%~ 5% | 1.5~ 1.58 | 0.5~ 0.56 |
 | 其他介电材料 | 2%~ 5% | 1.33~ 1.58 | 0.35~ 0.56 |
 | 眼睛 | 2.5% | 1.38 | 0.39 |
-| 皮肤 | 2.8% | 1.4 | 0.42 | 
+| 皮肤 | 2.8% | 1.4 | 0.42 |
 | 头发 | 4.6% | 1.55 | 0.54 |
 | 牙齿 | 5.8% | 1.63 | 0.6 |
 | 默认 | 4% | 1.5 | 0.5 |
@@ -563,10 +566,25 @@ f_0 = {baseColor}* {metallic}
 vec3 f0 = 0.16 * reflectance * reflectance * (1.0 - metallic) + baseColor * metallic;
 ```
 
+### 材质参考
+
+Filament 提供了一个[**材质制作参考**](https://google.github.io/filament/Material%20Properties.pdf)，帮助使用者制作自己的 PBR 材质。
+
+对普通材质
+: *BaseColor* 应该没有除微表面的遮挡外的一切光照信息。*金属度*为非 0 即 1 的值，纯导体为 1，纯电介质为 0，因此对于这两类材质的金属度应该为接近 0 或 1的值，中间值应用于表面类型的过渡，如金属到铁锈。
+
+对非金属材质
+: *BaseColor* 代表的是反射的颜色，应为 *sRGB 50~ 240* 或 *sRGB 30~ 240*。*金属度*应该为 0 或者接近 0 的值。反射率如果找不到合适的值，可以为 *sRGB 127 (Linear 0.5， Reflectance 4%)*。*反射率*不宜小于 *sRGB 90（Linear 0.33，Reflectance 2%）*
+
+对金属材质
+: *BaseColor* 代表高光和反射的颜色，亮度应在 *67%~ 100% (sRGB 170~ 255)*，被氧化过或者更脏的金属可以考虑使用更低的值。*金属度*为 1 或者接近 1 的值。*反射率*可以被忽略，或由 BaseColor 计算而来。
+
+## 参考
+
+- [Specular BRDF Reference](http://graphicrants.blogspot.com/2013/08/specular-brdf-reference.html)
 - [physically-based-shading-on-mobile](https://www.unrealengine.com/en/blog/physically-based-shading-on-mobile)
+- [Game Developer Magazine Floating Point](https://randomascii.wordpress.com/2012/09/09/game-developer-magazine-floating-point/)
+- [Moving Frostbite to PBR](https://media.contentapi.ea.com/content/dam/eacom/frostbite/files/s2014-pbs-frostbite-slides.pdf)
 
-- [^Ashikhmin00]: [A microfacet-based BRDF generator](https://dl.acm.org/doi/pdf/10.1145/344779.344814)
-- [^Ashikhmin07]: [Distribution-based BRDFs](https://www.semanticscholar.org/paper/Distribution-based-BRDFs-Ashikhmin-Premoze/c54e98f379334f881389962c8598148389db5c40)
-- [^Neubelt13]: [Crafting a Next-Gen Material Pipeline for The Order: 1886](https://blog.selfshadow.com/publications/s2013-shading-course/rad/s2013_pbs_rad_notes.pdf)
-
-- [^GPUGemsSSS]: [Chapter 16. Real-Time Approximations to Subsurface Scattering](https://developer.nvidia.com/gpugems/gpugems/part-iii-materials/chapter-16-real-time-approximations-subsurface-scattering)
+[^Disney]: [Physically Based Shading at Disney](https://media.disneyanimation.com/uploads/production/publication_asset/48/asset/s2012_pbs_disney_brdf_notes_v3.pdf)
+[^Heitz14]: [Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs](https://www.jcgt.org/published/0003/02/03/paper.pdf)
